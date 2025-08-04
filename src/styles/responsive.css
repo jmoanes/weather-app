@@ -1,0 +1,123 @@
+/* Responsive styles */
+
+/* Default: mobile first */
+#app {
+  max-width: 100%;
+  min-width: 0;
+  box-shadow: none;
+}
+.header {
+  padding: 12px 0 6px 0;
+}
+.header-title {
+  font-size: 1.3rem;
+}
+.header-search input {
+  font-size: 0.95rem;
+}
+.header-search button {
+  font-size: 0.95rem;
+  min-width: 44px;
+  min-height: 44px;
+}
+#main-content {
+  padding: 12px 6px 24px 6px;
+}
+.forecast-cards {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  gap: 8px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 8px;
+}
+.forecast-card {
+  min-width: 85vw;
+  max-width: 95vw;
+  margin-right: 2px;
+  scroll-snap-align: start;
+  touch-action: pan-x;
+}
+
+/* Tablet (min-width: 600px) */
+@media (min-width: 600px) {
+  #app {
+    max-width: 600px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  }
+  .header-title {
+    font-size: 2rem;
+  }
+  .header-search input, .header-search button {
+    font-size: 1rem;
+  }
+  #main-content {
+    padding: 18px 16px 32px 16px;
+  }
+  .forecast-cards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    flex-wrap: unset;
+    overflow-x: unset;
+    gap: 16px;
+    padding-bottom: 0;
+  }
+  .forecast-card {
+    min-width: 220px;
+    max-width: 100%;
+    margin-right: 0;
+    scroll-snap-align: unset;
+  }
+}
+
+/* Desktop (min-width: 900px) */
+@media (min-width: 900px) {
+  #app {
+    max-width: 800px;
+  }
+  .header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding: 18px 24px 10px 24px;
+  }
+  .header-title {
+    font-size: 2.2rem;
+    margin-bottom: 0;
+  }
+  .header-search {
+    margin-bottom: 0;
+  }
+  .header-cities {
+    padding-bottom: 0;
+  }
+  .forecast-cards {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 24px;
+  }
+  .forecast-card {
+    min-width: 120px;
+    max-width: 180px;
+  }
+}
+
+/* Extra: Improve tap targets and spacing for mobile */
+@media (max-width: 599px) {
+  .header-search input, .header-search button {
+    min-height: 44px;
+    font-size: 1.1rem;
+  }
+  .header-search button {
+    min-width: 44px;
+    font-size: 1.1rem;
+  }
+  .forecast-card {
+    padding: 18px 8px 18px 8px;
+  }
+  .header-cities {
+    gap: 12px;
+    padding-bottom: 8px;
+  }
+} 
