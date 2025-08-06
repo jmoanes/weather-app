@@ -39,27 +39,42 @@ const PIXABAY_BASE_URL = 'https://pixabay.com/api/';
  * @returns {Promise<string|null>} Image URL or null if not found
  */
 export async function fetchCityscapeImage(cityName, weatherDesc, countryName) {
-  let query;
-  if (countryName) {
-    query = `${cityName} ${countryName} cityscape`;
-  } else {
-    query = `${cityName} cityscape`;
-  }
+  // Try multiple search strategies for better results
+  const searchQueries = [
+    // Primary search with country and weather
+    `${cityName} ${countryName || ''} ${weatherDesc || ''} cityscape skyline`.trim(),
+    // City with country
+    `${cityName} ${countryName || ''} cityscape skyline`.trim(),
+    // Just city with weather
+    `${cityName} ${weatherDesc || ''} cityscape`.trim(),
+    // Simple city search
+    `${cityName} cityscape skyline`,
+    // Fallback to just city
+    `${cityName} city`
+  ];
 
-  if (weatherDesc) {
-    query = `${cityName} ${countryName || ''} ${weatherDesc} cityscape`;
-  }
-
-  const url = `${PIXABAY_BASE_URL}?key=${PIXABAY_API_KEY}&q=${encodeURIComponent(query)}&image_type=photo&orientation=horizontal&category=places&per_page=3&safesearch=true`;
-  try {
-    const response = await fetch(url);
-    if (!response.ok) return null;
-    const data = await response.json();
-    if (data.hits && data.hits.length > 0) {
-      return data.hits[0].largeImageURL || data.hits[0].webformatURL;
+  for (const query of searchQueries) {
+    if (!query.trim()) continue;
+    
+    const url = `${PIXABAY_BASE_URL}?key=${PIXABAY_API_KEY}&q=${encodeURIComponent(query)}&image_type=photo&orientation=horizontal&category=places&per_page=5&safesearch=true&min_width=1200&min_height=800`;
+    try {
+      const response = await fetch(url);
+      if (!response.ok) continue;
+      const data = await response.json();
+      if (data.hits && data.hits.length > 0) {
+        // Prefer high-quality images
+        const bestImage = data.hits.find(hit => 
+          hit.largeImageURL && 
+          hit.imageWidth >= 1200 && 
+          hit.imageHeight >= 800
+        ) || data.hits[0];
+        
+        return bestImage.largeImageURL || bestImage.webformatURL;
+      }
+    } catch (e) {
+      continue;
     }
-    return null;
-  } catch (e) {
-    return null;
   }
+  
+  return null;
 } 

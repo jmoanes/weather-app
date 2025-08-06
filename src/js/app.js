@@ -6,8 +6,8 @@ import { getRandomQuote } from './ui/quote.js';
 import { renderForecastChart } from './ui/chart.js';
 
 // Main app logic
-let DEFAULT_CITY = 'New York';
-let DEFAULT_COUNTRY = 'US';
+let DEFAULT_CITY = 'Kyiv';
+let DEFAULT_COUNTRY = 'UA';
 let currentCity = '';
 let currentView = 'today'; // 'today' or 'fiveDays'
 let expandedDate = '';
@@ -16,11 +16,6 @@ let showChart = false;
 let errorMessage = '';
 
 function renderDashboard(weatherData, forecastData) {
-  // Error notification
-  let errorHTML = '';
-  if (errorMessage) {
-    errorHTML = `<div class="error-notification">${errorMessage}</div>`;
-  }
   // Weather Card
   let weatherCardHTML = '';
   let navButtonsHTML = '';
@@ -57,7 +52,37 @@ function renderDashboard(weatherData, forecastData) {
     }
   } else if (currentView === 'fiveDays') {
     if (forecastData) {
-      mainContentHTML = renderFiveDayForecast(forecastData, allExpanded, showChart);
+      // Get country information from weather data
+      let countryName = '';
+      if (weatherData && weatherData.sys && weatherData.sys.country) {
+        const countryCode = weatherData.sys.country;
+        // Use the same country names mapping from header.js
+        const countryNames = {
+          'TH': 'Thailand', 'US': 'United States', 'GB': 'United Kingdom', 'FR': 'France',
+          'UA': 'Ukraine', 'PL': 'Poland', 'AU': 'Australia', 'CA': 'Canada', 'DE': 'Germany',
+          'IT': 'Italy', 'ES': 'Spain', 'JP': 'Japan', 'CN': 'China', 'IN': 'India',
+          'BR': 'Brazil', 'MX': 'Mexico', 'RU': 'Russia', 'KR': 'South Korea',
+          'NL': 'Netherlands', 'SE': 'Sweden', 'NO': 'Norway', 'DK': 'Denmark',
+          'FI': 'Finland', 'CH': 'Switzerland', 'AT': 'Austria', 'BE': 'Belgium',
+          'PT': 'Portugal', 'GR': 'Greece', 'IE': 'Ireland', 'NZ': 'New Zealand',
+          'VN': 'Vietnam', 'SG': 'Singapore', 'MY': 'Malaysia', 'ID': 'Indonesia',
+          'PH': 'Philippines', 'TR': 'Turkey', 'SA': 'Saudi Arabia', 'AE': 'United Arab Emirates',
+          'EG': 'Egypt', 'ZA': 'South Africa', 'NG': 'Nigeria', 'KE': 'Kenya',
+          'MA': 'Morocco', 'TN': 'Tunisia', 'DZ': 'Algeria', 'LY': 'Libya',
+          'SD': 'Sudan', 'ET': 'Ethiopia', 'GH': 'Ghana', 'CI': 'Ivory Coast',
+          'SN': 'Senegal', 'ML': 'Mali', 'BF': 'Burkina Faso', 'NE': 'Niger',
+          'TD': 'Chad', 'CF': 'Central African Republic', 'CM': 'Cameroon',
+          'GQ': 'Equatorial Guinea', 'GA': 'Gabon', 'CG': 'Republic of the Congo',
+          'CD': 'Democratic Republic of the Congo', 'AO': 'Angola', 'ZM': 'Zambia',
+          'ZW': 'Zimbabwe', 'BW': 'Botswana', 'NA': 'Namibia', 'SZ': 'Eswatini',
+          'LS': 'Lesotho', 'MG': 'Madagascar', 'MU': 'Mauritius', 'SC': 'Seychelles',
+          'KM': 'Comoros', 'DJ': 'Djibouti', 'SO': 'Somalia', 'ER': 'Eritrea',
+          'SS': 'South Sudan', 'RW': 'Rwanda', 'BI': 'Burundi', 'TZ': 'Tanzania',
+          'UG': 'Uganda', 'MZ': 'Mozambique', 'MW': 'Malawi'
+        };
+        countryName = countryNames[countryCode] || countryCode;
+      }
+      mainContentHTML = renderFiveDayForecast(forecastData, allExpanded, showChart, currentCity, countryName);
       if (showChart) {
         mainContentHTML += renderForecastChart(forecastData);
       }
@@ -104,26 +129,12 @@ function renderDashboard(weatherData, forecastData) {
   if (currentView === 'fiveDays') {
     app.innerHTML = `
       <div id="header-root"></div>
-      ${errorHTML}
-      ${isMobile ? '' : '<div class="country-align-row"></div>'}
-      ${isMobile ? `
-        <div style="width:100%;display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:16px;padding:0 16px;">
-          <div style="font-size:1.1rem;font-weight:600;color:#fff;letter-spacing:0.5px;text-align:center;">${currentCity || ''}</div>
-          ${navButtonsHTML}
-        </div>
-      ` : `
-        <div style="width:100%;display:flex;justify-content:center;align-items:center;gap:24px;margin-bottom:8px;">
-          <div style="font-size:1.25rem;font-weight:600;color:#fff;letter-spacing:0.5px;">${currentCity || ''}</div>
-          ${navButtonsHTML}
-        </div>
-      `}
+      ${navButtonsHTML}
       ${mainContentHTML}
     `;
   } else {
     app.innerHTML = `
       <div id="header-root"></div>
-      ${errorHTML}
-      ${isMobile ? '' : '<div class="country-align-row"></div>'}
       <div class="weather-right-group">
         ${weatherCardHTML}
         ${navButtonsHTML}
@@ -210,10 +221,21 @@ async function setCityBackground(city, weatherDesc, countryName) {
   const overlay = document.querySelector('.background-overlay');
   if (!city) {
     document.body.style.backgroundImage = '';
-    if (overlay) overlay.style.backgroundImage = '';
+    if (overlay) {
+      overlay.style.backgroundImage = '';
+      overlay.style.opacity = '0';
+    }
     return;
   }
+  
+  // Show loading state
+  if (overlay) {
+    overlay.style.opacity = '0.3';
+    overlay.style.transition = 'opacity 0.5s ease-in-out';
+  }
+  
   let imageUrl = await fetchCityscapeImage(city, weatherDesc, countryName);
+  
   if (imageUrl) {
     if (overlay) {
       overlay.style.display = 'block';
@@ -221,7 +243,10 @@ async function setCityBackground(city, weatherDesc, countryName) {
       overlay.style.backgroundSize = 'cover';
       overlay.style.backgroundPosition = 'center';
       overlay.style.backgroundRepeat = 'no-repeat';
-      overlay.style.opacity = '0.7';
+      overlay.style.opacity = '0.6';
+      overlay.style.transition = 'opacity 0.8s ease-in-out';
+      
+      // City name overlay removed
     } else {
       document.body.style.backgroundImage = `url('${imageUrl}')`;
       document.body.style.backgroundSize = 'cover';
@@ -232,16 +257,25 @@ async function setCityBackground(city, weatherDesc, countryName) {
     if (overlay) {
       overlay.style.display = 'none';
       overlay.style.backgroundImage = '';
+      overlay.style.opacity = '0';
     }
     document.body.style.backgroundImage = '';
+    
+    // City name overlay removed
   }
 }
+
+
 
 async function updateDashboard(city) {
   currentCity = city;
   let weatherData = null;
   let forecastData = null;
   errorMessage = '';
+  
+  // Show loading state
+  showLoading(true);
+  
   if (city) {
     try {
       weatherData = await fetchCurrentWeather(city);
@@ -254,12 +288,77 @@ async function updateDashboard(city) {
       errorMessage = 'City or country not found. Please try another.';
       renderDashboard(null, null);
       setCityBackground(null, null, null);
+      showLoading(false);
+      showErrorMessage(errorMessage);
       return;
     }
   } else {
     setCityBackground(null, null, null);
   }
+  
+  // Hide loading state
+  showLoading(false);
   renderDashboard(weatherData, forecastData);
+}
+
+function showLoading(show) {
+  let loadingElement = document.querySelector('.loading-overlay');
+  
+  if (show) {
+    if (!loadingElement) {
+      loadingElement = createLoadingOverlay();
+    }
+    loadingElement.style.display = 'flex';
+  } else {
+    if (loadingElement) {
+      loadingElement.style.display = 'none';
+    }
+  }
+}
+
+function createLoadingOverlay() {
+  const overlay = document.createElement('div');
+  overlay.className = 'loading-overlay';
+  overlay.innerHTML = `
+    <div class="loading-content">
+      <div class="loading-spinner"></div>
+      <div class="loading-text">Searching weather data...</div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  return overlay;
+}
+
+function showErrorMessage(message) {
+  // Remove any existing error message
+  const existingError = document.querySelector('.error-message-overlay');
+  if (existingError) {
+    existingError.remove();
+  }
+  
+  // Create new error message
+  const errorOverlay = document.createElement('div');
+  errorOverlay.className = 'error-message-overlay';
+  errorOverlay.innerHTML = `
+    <div class="error-message-content">
+      <div class="error-icon">⚠️</div>
+      <div class="error-text">${message}</div>
+    </div>
+  `;
+  document.body.appendChild(errorOverlay);
+  
+  // Auto-dismiss after 3 seconds
+  setTimeout(() => {
+    if (errorOverlay.parentNode) {
+      errorOverlay.style.opacity = '0';
+      errorOverlay.style.transform = 'translateY(-20px)';
+      setTimeout(() => {
+        if (errorOverlay.parentNode) {
+          errorOverlay.remove();
+        }
+      }, 300);
+    }
+  }, 3000);
 }
 
 window.addEventListener('DOMContentLoaded', () => {

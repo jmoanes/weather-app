@@ -1,7 +1,7 @@
 // Chart logic for 5-day forecast
 
 /**
- * Render a simple SVG line chart for 5-day forecast temperatures
+ * Render a professional SVG line chart for 5-day forecast temperatures
  * @param {Object} forecastData - Data from OpenWeatherMap 5-day forecast API   
  * @returns {string} HTML string with SVG chart
  */
@@ -23,23 +23,23 @@ export function renderForecastChart(forecastData) {
       date,
       temp: Math.round(noon.main.temp),
       humidity: noon.main.humidity,
-      wind: noon.wind.speed,
-      pressure: noon.main.pressure
+      wind: Math.round(noon.wind.speed * 10) / 10,
+      pressure: Math.round(noon.main.pressure / 10) * 10
     };
   }).slice(0, 5);
   
   if (daily.length < 2) {
-    return `<div class='forecast-chart-section' style='background:linear-gradient(135deg,#202a3a 60%,#26334d 100%);border-radius:18px;padding:32px 24px 18px 24px;box-shadow:0 6px 32px rgba(0,0,0,0.22);max-width:640px;width:100%;margin:32px auto 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;'>
-      <div style='font-size:1.18rem;font-weight:600;color:#fff;letter-spacing:0.5px;text-align:center;margin-bottom:10px;'>5-Day Temperature Trend</div>
-      <div style='color:#fff;opacity:0.7;font-size:1.1rem;text-align:center;margin:32px 0;'>Not enough data to display chart.</div>
+    return `<div class='forecast-chart-section' style='background:linear-gradient(135deg,#1a2332 0%,#26334d 50%,#202a3a 100%);border-radius:20px;padding:40px 32px;box-shadow:0 12px 40px rgba(0,0,0,0.25),0 6px 20px rgba(0,0,0,0.2);max-width:720px;width:100%;margin:32px auto 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,0.08);backdrop-filter:blur(10px);'>
+      <div style='font-size:1.25rem;font-weight:700;color:#fff;letter-spacing:0.8px;text-align:center;margin-bottom:12px;font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;text-shadow:0 2px 4px rgba(0,0,0,0.3);'>5-Day Weather Analytics</div>
+      <div style='color:#fff;opacity:0.75;font-size:1.1rem;text-align:center;margin:32px 0;font-weight:500;letter-spacing:0.3px;'>Insufficient data to generate comprehensive chart.</div>
     </div>`;
   }
   
   // Responsive chart dimensions
   const isMobile = window.innerWidth <= 768;
-  const w = isMobile ? 320 : 640;
-  const h = isMobile ? 240 : 320;
-  const pad = isMobile ? 40 : 50;
+  const w = isMobile ? 360 : 720;
+  const h = isMobile ? 280 : 400;
+  const pad = isMobile ? 50 : 70;
   
   // All data arrays
   const temps = daily.map(d => d.temp);
@@ -47,10 +47,10 @@ export function renderForecastChart(forecastData) {
   const winds = daily.map(d => d.wind);
   const pressures = daily.map(d => d.pressure);
   
-  // Find global min/max for y-axis
+  // Find global min/max for y-axis with better scaling
   const allY = temps.concat(humidities, winds, pressures);
-  const minY = Math.min(...allY) - 2;
-  const maxY = Math.max(...allY) + 2;
+  const minY = Math.floor(Math.min(...allY) * 0.95);
+  const maxY = Math.ceil(Math.max(...allY) * 1.05);
   
   // Map all values to y coordinate
   function mapY(val) {
@@ -85,71 +85,103 @@ export function renderForecastChart(forecastData) {
   const windPath = getSmoothPath(windPoints);
   const pressurePath = getSmoothPath(pressurePoints);
   
-  // X axis labels (day names)
+  // X axis labels (day names with year)
   const xLabels = daily.map(d => {
     const dt = new Date(d.date);
-    return isMobile ? dt.toLocaleDateString('en-US', { weekday: 'short' }).substring(0, 3) : dt.toLocaleDateString('en-US', { weekday: 'short' });
+    const dateYear = dt.getFullYear();
+    
+    if (isMobile) {
+      const dayName = dt.toLocaleDateString('en-US', { weekday: 'short' }).substring(0, 3);
+      return `${dayName} '${dateYear.toString().slice(-2)}`;
+    } else {
+      const dayName = dt.toLocaleDateString('en-US', { weekday: 'short' });
+      return `${dayName} '${dateYear.toString().slice(-2)}`;
+    }
   });
   
   // Y axis ticks
-  const yTicks = isMobile ? 4 : 5;
+  const yTicks = isMobile ? 5 : 6;
   const yVals = Array.from({length: yTicks}, (_, i) => minY + (i * (maxY - minY) / (yTicks-1)));
   
   // Build SVG
-      return `
-      <div class="forecast-chart-section" style="background:linear-gradient(135deg,#1a2332 60%,#202a3a 100%);border-radius:16px;padding:${isMobile ? '24px 16px 20px 16px' : '36px 28px 28px 28px'};box-shadow:0 8px 32px rgba(0,0,0,0.2),0 4px 16px rgba(0,0,0,0.15);max-width:100%;width:100%;margin:16px auto 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,0.12);">
-        <div style="font-size:${isMobile ? '1rem' : '1.1rem'};font-weight:600;color:#fff;letter-spacing:0.5px;text-align:center;margin-bottom:${isMobile ? '14px' : '16px'};font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">5-Day Temperature Trend</div>
-        <div style="display:flex;align-items:center;gap:${isMobile ? '10px' : '12px'};margin-bottom:${isMobile ? '14px' : '16px'};font-size:${isMobile ? '0.4rem' : '0.45rem'};flex-wrap:wrap;justify-content:center;font-weight:500;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;padding:0 6px;">
-          <span style="color:#fff;opacity:0.85;font-size:${isMobile ? '0.4rem' : '0.45rem'};font-weight:600;margin-right:3px;letter-spacing:0.2px;">AVERAGE:</span>
-          <span style="display:flex;align-items:center;margin:0 2px;"><svg width="${isMobile ? '9' : '10'}" height="${isMobile ? '1.3' : '1.4'}"><rect width="${isMobile ? '9' : '10'}" height="${isMobile ? '1.3' : '1.4'}" fill="#ff9800" rx="0.2"/></svg> <span style="color:#fff;margin-left:3px;font-size:${isMobile ? '0.4rem' : '0.45rem'};font-weight:500;letter-spacing:0.1px;">Temperature, C°</span></span>
-          <span style="display:flex;align-items:center;margin:0 2px;"><svg width="${isMobile ? '9' : '10'}" height="${isMobile ? '1.3' : '1.4'}"><rect width="${isMobile ? '9' : '10'}" height="${isMobile ? '1.3' : '1.4'}" fill="#1976d2" rx="0.2"/></svg> <span style="color:#fff;margin-left:3px;font-size:${isMobile ? '0.4rem' : '0.45rem'};font-weight:500;letter-spacing:0.1px;">Humidity, %</span></span>
-          <span style="display:flex;align-items:center;margin:0 2px;"><svg width="${isMobile ? '9' : '10'}" height="${isMobile ? '1.3' : '1.4'}"><rect width="${isMobile ? '9' : '10'}" height="${isMobile ? '1.3' : '1.4'}" fill="#ffd600" rx="0.2"/></svg> <span style="color:#fff;margin-left:3px;font-size:${isMobile ? '0.4rem' : '0.45rem'};font-weight:500;letter-spacing:0.1px;">Wind Speed, m/s</span></span>
-          <span style="display:flex;align-items:center;margin:0 2px;"><svg width="${isMobile ? '9' : '10'}" height="${isMobile ? '1.3' : '1.4'}"><rect width="${isMobile ? '9' : '10'}" height="${isMobile ? '1.3' : '1.4'}" fill="#43a047" rx="0.2"/></svg> <span style="color:#fff;margin-left:3px;font-size:${isMobile ? '0.4rem' : '0.45rem'};font-weight:500;letter-spacing:0.1px;">Atmosphere Pressure, m/m</span></span>
-        </div>
+  return `
+    <div class="forecast-chart-section" style="background:linear-gradient(135deg,#1a2332 0%,#26334d 50%,#202a3a 100%);border-radius:20px;padding:${isMobile ? '32px 24px 28px 24px' : '48px 40px 40px 40px'};box-shadow:0 16px 48px rgba(0,0,0,0.3),0 8px 24px rgba(0,0,0,0.25);max-width:100%;width:100%;margin:24px auto 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,0.08);backdrop-filter:blur(12px);">
+      <div style="font-size:${isMobile ? '1.1rem' : '1.3rem'};font-weight:700;color:#fff;letter-spacing:0.8px;text-align:center;margin-bottom:${isMobile ? '20px' : '24px'};font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;text-shadow:0 2px 4px rgba(0,0,0,0.3);">5-Day Weather Analytics</div>
+      <div style="display:flex;align-items:center;gap:${isMobile ? '12px' : '16px'};margin-bottom:${isMobile ? '20px' : '24px'};font-size:${isMobile ? '0.75rem' : '0.85rem'};flex-wrap:wrap;justify-content:center;font-weight:600;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;padding:16px 20px;background:rgba(255,255,255,0.05);border-radius:12px;border:1px solid rgba(255,255,255,0.1);backdrop-filter:blur(8px);">
+        <span style="color:#fff;opacity:0.9;font-size:${isMobile ? '0.7rem' : '0.8rem'};font-weight:700;margin-right:8px;letter-spacing:0.4px;text-transform:uppercase;">Metrics:</span>
+        <span style="display:flex;align-items:center;margin:0 4px;padding:6px 12px;background:rgba(255,152,0,0.15);border-radius:8px;border:1px solid rgba(255,152,0,0.3);"><svg width="${isMobile ? '12' : '14'}" height="${isMobile ? '2' : '2.5'}"><rect width="${isMobile ? '12' : '14'}" height="${isMobile ? '2' : '2.5'}" fill="#ff9800" rx="1"/></svg> <span style="color:#fff;margin-left:6px;font-size:${isMobile ? '0.7rem' : '0.8rem'};font-weight:600;letter-spacing:0.2px;">Temperature (°C)</span></span>
+        <span style="display:flex;align-items:center;margin:0 4px;padding:6px 12px;background:rgba(25,118,210,0.15);border-radius:8px;border:1px solid rgba(25,118,210,0.3);"><svg width="${isMobile ? '12' : '14'}" height="${isMobile ? '2' : '2.5'}"><rect width="${isMobile ? '12' : '14'}" height="${isMobile ? '2' : '2.5'}" fill="#1976d2" rx="1"/></svg> <span style="color:#fff;margin-left:6px;font-size:${isMobile ? '0.7rem' : '0.8rem'};font-weight:600;letter-spacing:0.2px;">Humidity (%)</span></span>
+        <span style="display:flex;align-items:center;margin:0 4px;padding:6px 12px;background:rgba(255,214,0,0.15);border-radius:8px;border:1px solid rgba(255,214,0,0.3);"><svg width="${isMobile ? '12' : '14'}" height="${isMobile ? '2' : '2.5'}"><rect width="${isMobile ? '12' : '14'}" height="${isMobile ? '2' : '2.5'}" fill="#ffd600" rx="1"/></svg> <span style="color:#fff;margin-left:6px;font-size:${isMobile ? '0.7rem' : '0.8rem'};font-weight:600;letter-spacing:0.2px;">Wind (m/s)</span></span>
+        <span style="display:flex;align-items:center;margin:0 4px;padding:6px 12px;background:rgba(67,160,71,0.15);border-radius:8px;border:1px solid rgba(67,160,71,0.3);"><svg width="${isMobile ? '12' : '14'}" height="${isMobile ? '2' : '2.5'}"><rect width="${isMobile ? '12' : '14'}" height="${isMobile ? '2' : '2.5'}" fill="#43a047" rx="1"/></svg> <span style="color:#fff;margin-left:6px;font-size:${isMobile ? '0.7rem' : '0.8rem'};font-weight:600;letter-spacing:0.2px;">Pressure (hPa)</span></span>
+      </div>
       <div style="width:100%;overflow-x:auto;">
         <svg width="100%" height="${h}" viewBox="0 0 ${w} ${h}" class="forecast-chart" style="background:none;max-width:100%;display:block;margin:0 auto;">
           <defs>
             <filter id="chartDropShadow" x="-20%" y="-20%" width="140%" height="140%">
-              <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.18"/>
+              <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#000" flood-opacity="0.25"/>
+            </filter>
+            <filter id="glowEffect" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+              <feMerge> 
+                <feMergeNode in="coloredBlur"/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
             </filter>
             <linearGradient id="chartBg" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#26334d" stop-opacity="0.08"/>
-              <stop offset="100%" stop-color="#202a3a" stop-opacity="0.12"/>
+              <stop offset="0%" stop-color="#26334d" stop-opacity="0.1"/>
+              <stop offset="50%" stop-color="#202a3a" stop-opacity="0.08"/>
+              <stop offset="100%" stop-color="#1a2332" stop-opacity="0.12"/>
+            </linearGradient>
+            <linearGradient id="tempGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#ff9800" stop-opacity="0.8"/>
+              <stop offset="100%" stop-color="#ff5722" stop-opacity="1"/>
+            </linearGradient>
+            <linearGradient id="humidityGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#1976d2" stop-opacity="0.8"/>
+              <stop offset="100%" stop-color="#1565c0" stop-opacity="1"/>
+            </linearGradient>
+            <linearGradient id="windGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#ffd600" stop-opacity="0.8"/>
+              <stop offset="100%" stop-color="#ffc107" stop-opacity="1"/>
+            </linearGradient>
+            <linearGradient id="pressureGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#43a047" stop-opacity="0.8"/>
+              <stop offset="100%" stop-color="#388e3c" stop-opacity="1"/>
             </linearGradient>
           </defs>
           
           <!-- Background -->
-          <rect x="0" y="0" width="${w}" height="${h}" fill="url(#chartBg)" rx="18"/>
+          <rect x="0" y="0" width="${w}" height="${h}" fill="url(#chartBg)" rx="20"/>
           
           <!-- Grid lines -->
-          ${yVals.map((v,i) => `<line x1="${pad}" y1="${pad + i*(h-2*pad)/(yTicks-1)}" x2="${w-pad}" y2="${pad + i*(h-2*pad)/(yTicks-1)}" stroke="#fff" stroke-width="0.5" opacity="0.06" />`).join('')}
-          ${tempPoints.map((p,i) => `<line x1="${p.x}" y1="${pad}" x2="${p.x}" y2="${h-pad}" stroke="#fff" stroke-width="0.5" opacity="0.04" />`).join('')}
+          ${yVals.map((v,i) => `<line x1="${pad}" y1="${pad + i*(h-2*pad)/(yTicks-1)}" x2="${w-pad}" y2="${pad + i*(h-2*pad)/(yTicks-1)}" stroke="#fff" stroke-width="0.8" opacity="0.08" />`).join('')}
+          ${tempPoints.map((p,i) => `<line x1="${p.x}" y1="${pad}" x2="${p.x}" y2="${h-pad}" stroke="#fff" stroke-width="0.6" opacity="0.06" />`).join('')}
           
           <!-- X and Y axis lines -->
-          <line x1="${pad}" y1="${pad}" x2="${w-pad}" y2="${pad}" stroke="#fff" stroke-width="0.8" opacity="0.15" />
-          <line x1="${pad}" y1="${pad}" x2="${pad}" y2="${h-pad}" stroke="#fff" stroke-width="0.8" opacity="0.15" />
+          <line x1="${pad}" y1="${pad}" x2="${w-pad}" y2="${pad}" stroke="#fff" stroke-width="1.2" opacity="0.2" />
+          <line x1="${pad}" y1="${pad}" x2="${pad}" y2="${h-pad}" stroke="#fff" stroke-width="1.2" opacity="0.2" />
           
           <!-- Y axis labels -->
-          ${yVals.map((v,i) => `<text x="${pad-18}" y="${pad + i*(h-2*pad)/(yTicks-1) + 2}" text-anchor="end" font-size="${isMobile ? '0.55' : '0.6'}" font-weight="500" fill="#fff" opacity="0.9" font-family='Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif stroke="#1a1a1a" stroke-width="0.06" letter-spacing="0.15">${v.toFixed(1)}</text>`).join('')}
+          ${yVals.map((v,i) => `<text x="${pad-24}" y="${pad + i*(h-2*pad)/(yTicks-1) + 3}" text-anchor="end" font-size="5" font-weight="700" fill="#fff" opacity="0.9" font-family='Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif stroke="#000" stroke-width="1" letter-spacing="0.3" filter="drop-shadow(0 1px 2px rgba(0,0,0,0.8))">${v.toFixed(0)}</text>`).join('')}
           
           <!-- X axis labels -->
-          ${tempPoints.map((p,i) => `<text x="${p.x}" y="${h-pad+18}" text-anchor="middle" font-size="${isMobile ? '0.55' : '0.6'}" font-weight="500" fill="#fff" opacity="0.85" font-family='Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif stroke="#1a1a1a" stroke-width="0.06" letter-spacing="0.15">${xLabels[i]}</text>`).join('')}
+          ${tempPoints.map((p,i) => `<text x="${p.x}" y="${h-pad+22}" text-anchor="middle" font-size="5" font-weight="700" fill="#fff" opacity="0.9" font-family='Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif stroke="#000" stroke-width="1" letter-spacing="0.3" filter="drop-shadow(0 1px 2px rgba(0,0,0,0.8))">${xLabels[i]}</text>`).join('')}
           
-          <!-- Temperature line -->
-          <path d="${tempPath}" fill="none" stroke="#ff9800" stroke-width="${isMobile ? '3' : '3.5'}" stroke-linecap="round" stroke-linejoin="round" filter="url(#chartDropShadow)" />
-          ${tempPoints.map(p => `<circle class="chart-point" cx="${p.x}" cy="${p.y}" r="${isMobile ? '5' : '6'}" fill="#26334d" stroke="#ff9800" stroke-width="2.5" filter="url(#chartDropShadow)" style="transition:all 0.18s;" />`).join('')}
+          <!-- Temperature line with gradient -->
+          <path d="${tempPath}" fill="none" stroke="url(#tempGradient)" stroke-width="${isMobile ? '4' : '5'}" stroke-linecap="round" stroke-linejoin="round" filter="url(#chartDropShadow)" />
+          ${tempPoints.map(p => `<circle class="chart-point" cx="${p.x}" cy="${p.y}" r="${isMobile ? '6' : '8'}" fill="#26334d" stroke="url(#tempGradient)" stroke-width="3" filter="url(#glowEffect)" style="transition:all 0.2s ease;" />`).join('')}
           
-          <!-- Humidity line -->
-          <path d="${humidityPath}" fill="none" stroke="#1976d2" stroke-width="${isMobile ? '2' : '2.5'}" stroke-dasharray="6 4" stroke-linecap="round" stroke-linejoin="round" filter="url(#chartDropShadow)" />
-          ${humidityPoints.map(p => `<circle cx="${p.x}" cy="${p.y}" r="${isMobile ? '4' : '5'}" fill="#26334d" stroke="#1976d2" stroke-width="2" filter="url(#chartDropShadow)" />`).join('')}
+          <!-- Humidity line with gradient -->
+          <path d="${humidityPath}" fill="none" stroke="url(#humidityGradient)" stroke-width="${isMobile ? '3' : '4'}" stroke-dasharray="8 6" stroke-linecap="round" stroke-linejoin="round" filter="url(#chartDropShadow)" />
+          ${humidityPoints.map(p => `<circle cx="${p.x}" cy="${p.y}" r="${isMobile ? '5' : '6'}" fill="#26334d" stroke="url(#humidityGradient)" stroke-width="2.5" filter="url(#glowEffect)" />`).join('')}
           
-          <!-- Wind line -->
-          <path d="${windPath}" fill="none" stroke="#ffd600" stroke-width="${isMobile ? '2' : '2.5'}" stroke-dasharray="2 6" stroke-linecap="round" stroke-linejoin="round" filter="url(#chartDropShadow)" />
-          ${windPoints.map(p => `<circle cx="${p.x}" cy="${p.y}" r="${isMobile ? '4' : '5'}" fill="#26334d" stroke="#ffd600" stroke-width="2" filter="url(#chartDropShadow)" />`).join('')}
+          <!-- Wind line with gradient -->
+          <path d="${windPath}" fill="none" stroke="url(#windGradient)" stroke-width="${isMobile ? '3' : '4'}" stroke-dasharray="3 8" stroke-linecap="round" stroke-linejoin="round" filter="url(#chartDropShadow)" />
+          ${windPoints.map(p => `<circle cx="${p.x}" cy="${p.y}" r="${isMobile ? '5' : '6'}" fill="#26334d" stroke="url(#windGradient)" stroke-width="2.5" filter="url(#glowEffect)" />`).join('')}
           
-          <!-- Pressure line -->
-          <path d="${pressurePath}" fill="none" stroke="#43a047" stroke-width="${isMobile ? '2' : '2.5'}" stroke-dasharray="1 5" stroke-linecap="round" stroke-linejoin="round" filter="url(#chartDropShadow)" />
-          ${pressurePoints.map(p => `<circle cx="${p.x}" cy="${p.y}" r="${isMobile ? '4' : '5'}" fill="#26334d" stroke="#43a047" stroke-width="2" filter="url(#chartDropShadow)" />`).join('')}
+          <!-- Pressure line with gradient -->
+          <path d="${pressurePath}" fill="none" stroke="url(#pressureGradient)" stroke-width="${isMobile ? '3' : '4'}" stroke-dasharray="2 6" stroke-linecap="round" stroke-linejoin="round" filter="url(#chartDropShadow)" />
+          ${pressurePoints.map(p => `<circle cx="${p.x}" cy="${p.y}" r="${isMobile ? '5' : '6'}" fill="#26334d" stroke="url(#pressureGradient)" stroke-width="2.5" filter="url(#glowEffect)" />`).join('')}
         </svg>
       </div>
     </div>

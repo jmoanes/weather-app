@@ -1,100 +1,277 @@
-// Header UI logic
-// This module renders the header and manages search and city selection
+// Header functionality for the weather app
+let savedCities = ['Kyiv', 'Paris', 'Vinnytsia', 'Warsaw'];
+let currentCity = 'Kyiv';
+let showNextArrow = false; // Track if next arrow should be shown
+let hiddenCities = []; // Track cities that are added but hidden
 
-let selectedCities = [];
-let onCitySelect = null;
-
-// Helper to convert country code to country name
-const countryNames = {
-  'TH': 'Thailand',
-  'US': 'United States',
-  'GB': 'United Kingdom',
-  'FR': 'France',
-  'UA': 'Ukraine',
-  'PL': 'Poland',
-  // Add more as needed
-};
-function getCountryName(code) {
-  return countryNames[code] || code || '';
-}
-
-/**
- * Render the header UI
- * @param {string} currentCity - The currently selected city
- */
-function renderHeader(currentCity = '', currentCountry = '') {
-  // const countryDisplay = currentCountry ? `<div class="header-country" id="header-country">${getCountryName(currentCountry)}</div>` : '';
+export function initHeader(onCitySelect) {
   const headerHTML = `
-    <header class="header header-blur">
+    <header class="header">
+      
       <div class="header-searchbar">
-        <div class="search-input-wrapper" style="position:relative; flex:1 1 auto; display:flex; align-items:center; width:100%;">
-          <span class="searchbar-icon-inside" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); font-size:1.1rem; color:#b0b6be; pointer-events:none;">&#128269;</span>
-          <input type="text" id="city-search-input" placeholder="Enter the city" class="search-input-rounded" style="padding-left:2.2em; padding-right:2.2em; width:100%;" />
-          <span id="city-search-btn" class="search-btn-inside" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; padding:0; display:flex; align-items:center; justify-content:center; height:28px; width:28px;">
-            <span class="search-icon" style="font-size:1.5rem; color:#1976d2;">&#10148;</span>
-          </span>
+        <div class="search-input-wrapper">
+          <span class="searchbar-icon-inside">🔍</span>
+          <input type="text" class="search-input-rounded" placeholder="Search for a city..." id="city-search">
+          <button class="search-btn-inside" id="search-btn">
+            <span class="search-icon">⭐</span>
+          </button>
         </div>
       </div>
-      ${currentCity ? `<div class="header-current-city" style="text-align:center;font-size:1.2em;font-weight:bold;margin:8px 0 0 0;">${currentCity}</div>` : ''}
-      <div style="height: 10px;"></div>
-      <div class="header-cities-chips-scroll"><div class="header-cities-chips" id="header-cities">
-        ${selectedCities.map(city => `
-          <span class="header-city-chip${city === currentCity ? ' selected' : ''}" data-city="${city}">${city} <span class="chip-close">&times;</span></span>
-        `).join('')}
-      </div></div>
+      
+      <div class="header-cities-chips-container">
+        <button class="scroll-arrow scroll-left" id="scroll-left">‹</button>
+        <div class="header-cities-chips-scroll">
+          <div class="header-cities-chips" id="cities-chips">
+            ${savedCities.map(city => `
+              <button class="header-city-chip ${city === currentCity ? 'selected' : ''}" data-city="${city}">
+                ${city}
+                <span class="chip-close" data-city="${city}">×</span>
+              </button>
+            `).join('')}
+          </div>
+        </div>
+        <button class="scroll-arrow scroll-right" id="scroll-right">›</button>
+        <button class="next-move-arrow" id="next-move-arrow" style="display: none;" title="Next city">→</button>
+      </div>
     </header>
   `;
-  document.getElementById('header-root').innerHTML = headerHTML;
 
-  // Add event listeners
-  document.getElementById('city-search-btn').onclick = () => {
-    const input = document.getElementById('city-search-input');
-    const city = input.value.trim();
-    if (city && !selectedCities.includes(city)) {
-      selectedCities.unshift(city);
-      if (selectedCities.length > 2) {
-        selectedCities.pop();
-      }
-    }
-    if (onCitySelect) onCitySelect(city);
-    renderHeader(city, currentCountry);
-  };
+  // Find or create header container
+  let headerContainer = document.querySelector('.header-searchbar-root');
+  if (!headerContainer) {
+    headerContainer = document.createElement('div');
+    headerContainer.className = 'header-searchbar-root';
+    document.body.insertBefore(headerContainer, document.body.firstChild);
+  }
+  
+  headerContainer.innerHTML = headerHTML;
 
-  // Add Enter key event for search
-  document.getElementById('city-search-input').addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') {
-      document.getElementById('city-search-btn').click();
-    }
-  });
-
-  document.querySelectorAll('.header-city-chip').forEach(el => {
-    el.onclick = (e) => {
-      if (e.target.classList.contains('chip-close')) {
-        const city = el.getAttribute('data-city');
-        selectedCities = selectedCities.filter(c => c !== city);
-        renderHeader(currentCity, currentCountry);
-        return;
-      }
-      const city = el.getAttribute('data-city');
-      if (onCitySelect) onCitySelect(city);
-      renderHeader(city, currentCountry);
-    };
-  });
+  // Initialize event listeners
+  initializeHeaderEvents(onCitySelect);
 }
 
-/**
- * Initialize the header
- * @param {Function} citySelectCallback - Called with the selected city name
- */
-export function initHeader(citySelectCallback) {
-  onCitySelect = citySelectCallback;
-  // Create a root for the header if not present
-  let headerRoot = document.getElementById('header-root');
-  if (!headerRoot) {
-    headerRoot = document.createElement('div');
-    headerRoot.id = 'header-root';
-    const app = document.getElementById('app');
-    app.prepend(headerRoot);
+function initializeHeaderEvents(onCitySelect) {
+  const searchInput = document.getElementById('city-search');
+  const searchBtn = document.getElementById('search-btn');
+  const citiesChips = document.getElementById('cities-chips');
+  const scrollLeft = document.getElementById('scroll-left');
+  const scrollRight = document.getElementById('scroll-right');
+  const nextMoveArrow = document.getElementById('next-move-arrow');
+
+
+  // Search functionality
+  if (searchInput) {
+    searchInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        const city = searchInput.value.trim();
+        if (city) {
+          handleCitySelect(city, onCitySelect, true); // true = from search
+        }
+      }
+    });
   }
-  renderHeader();
+
+  if (searchBtn) {
+    searchBtn.addEventListener('click', () => {
+      const city = searchInput.value.trim();
+      if (city) {
+        handleCitySelect(city, onCitySelect, true); // true = from search
+      }
+    });
+  }
+
+  // Next move arrow functionality
+  if (nextMoveArrow) {
+    nextMoveArrow.addEventListener('click', () => {
+      // Scroll to show hidden cities when next arrow is clicked
+      if (hiddenCities.length > 0) {
+        scrollToRevealHiddenCities();
+        return;
+      }
+      
+      // If no hidden cities, cycle through existing cities
+      const currentIndex = savedCities.indexOf(currentCity);
+      const nextIndex = (currentIndex + 1) % savedCities.length;
+      const nextCity = savedCities[nextIndex];
+      handleCitySelect(nextCity, onCitySelect);
+    });
+  }
+
+
+  // City chips functionality
+  if (citiesChips) {
+    citiesChips.addEventListener('click', (e) => {
+      if (e.target.classList.contains('header-city-chip')) {
+        const city = e.target.dataset.city;
+        handleCitySelect(city, onCitySelect);
+      } else if (e.target.classList.contains('chip-close')) {
+        const city = e.target.dataset.city;
+        removeCity(city);
+      }
+    });
+  }
+
+  // Scroll functionality
+  if (scrollLeft) {
+    scrollLeft.addEventListener('click', () => {
+      citiesChips.scrollBy({ left: -200, behavior: 'smooth' });
+    });
+  }
+
+  if (scrollRight) {
+    scrollRight.addEventListener('click', () => {
+      citiesChips.scrollBy({ left: 200, behavior: 'smooth' });
+    });
+  }
+
+  // Update scroll arrows visibility
+  updateScrollArrows();
+  citiesChips.addEventListener('scroll', updateScrollArrows);
+  
+  // Update next arrow visibility
+  updateNextArrowVisibility();
+
+
+}
+
+function handleCitySelect(city, onCitySelect, isFromSearch = false) {
+  currentCity = city;
+  
+  // Add city to saved cities if not already there
+  if (!savedCities.includes(city) && !hiddenCities.includes(city)) {
+    if (isFromSearch) {
+      // If from search, add to bottom of hidden cities
+      hiddenCities.push(city);
+      showNextArrow = true; // Show next arrow to reveal hidden cities
+      updateCityChips(); // Update to show hidden chips
+      updateNextArrowVisibility();
+    } else {
+      // If from chip click or next button, add to visible cities
+      savedCities.unshift(city);
+      if (savedCities.length > 10) {
+        savedCities.pop();
+      }
+      updateCityChips();
+    }
+  } else if (savedCities.includes(city)) {
+    // Move selected city to front
+    savedCities = savedCities.filter(c => c !== city);
+    savedCities.unshift(city);
+    updateCityChips();
+  }
+
+  // Clear search input
+  const searchInput = document.getElementById('city-search');
+  if (searchInput) {
+    searchInput.value = '';
+  }
+
+  // Call the callback
+  if (onCitySelect) {
+    onCitySelect(city);
+  }
+}
+
+function removeCity(city) {
+  savedCities = savedCities.filter(c => c !== city);
+  hiddenCities = hiddenCities.filter(c => c !== city); // Also remove from hidden cities
+  
+  if (currentCity === city) {
+    currentCity = savedCities[0] || 'Kyiv';
+  }
+  updateCityChips();
+  
+  // Hide next arrow if no cities left and no hidden cities
+  if (savedCities.length <= 1 && hiddenCities.length === 0) {
+    showNextArrow = false;
+  }
+  updateNextArrowVisibility();
+}
+
+function updateCityChips() {
+  const citiesChips = document.getElementById('cities-chips');
+  if (citiesChips) {
+    // Combine visible cities and hidden cities (hidden ones are at the bottom and hidden)
+    const visibleChips = savedCities.map(city => `
+      <button class="header-city-chip ${city === currentCity ? 'selected' : ''}" data-city="${city}">
+        ${city}
+        <span class="chip-close" data-city="${city}">×</span>
+      </button>
+    `);
+    
+    const hiddenChips = hiddenCities.map(city => `
+      <button class="header-city-chip hidden-chip ${city === currentCity ? 'selected' : ''}" data-city="${city}">
+        ${city}
+        <span class="chip-close" data-city="${city}">×</span>
+      </button>
+    `);
+    
+    citiesChips.innerHTML = [...visibleChips, ...hiddenChips].join('');
+  }
+}
+
+function scrollToRevealHiddenCities() {
+  const citiesChips = document.getElementById('cities-chips');
+  if (citiesChips && hiddenCities.length > 0) {
+    // Find the first hidden chip
+    const hiddenChip = citiesChips.querySelector('.hidden-chip');
+    if (hiddenChip) {
+      // Get the city name from the chip
+      const cityToReveal = hiddenChip.dataset.city;
+      
+      // Scroll to show the hidden chip
+      hiddenChip.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'nearest', 
+        inline: 'center' 
+      });
+      
+      // Reveal the hidden chip with animation
+      setTimeout(() => {
+        hiddenChip.classList.add('revealing');
+        
+        // Move city from hidden to visible after animation
+        setTimeout(() => {
+          hiddenCities = hiddenCities.filter(city => city !== cityToReveal);
+          if (!savedCities.includes(cityToReveal)) {
+            savedCities.push(cityToReveal); // Add to end of visible cities
+          }
+          updateCityChips();
+          updateNextArrowVisibility();
+        }, 500);
+      }, 300);
+    }
+  }
+}
+
+function updateNextArrowVisibility() {
+  const nextMoveArrow = document.getElementById('next-move-arrow');
+  if (nextMoveArrow) {
+    // Show arrow if there are hidden cities or if showNextArrow is true and there are multiple cities
+    const shouldShow = hiddenCities.length > 0 || (showNextArrow && savedCities.length > 1);
+    nextMoveArrow.style.display = shouldShow ? 'flex' : 'none';
+    
+    // Add visual indicator for hidden cities
+    if (hiddenCities.length > 0) {
+      nextMoveArrow.classList.add('has-hidden');
+      nextMoveArrow.title = `Scroll to reveal hidden cities (${hiddenCities.length} hidden)`;
+    } else {
+      nextMoveArrow.classList.remove('has-hidden');
+      nextMoveArrow.title = 'Next city';
+    }
+  }
+}
+
+function updateScrollArrows() {
+  const citiesChips = document.getElementById('cities-chips');
+  const scrollLeft = document.getElementById('scroll-left');
+  const scrollRight = document.getElementById('scroll-right');
+
+  if (citiesChips && scrollLeft && scrollRight) {
+    const isAtStart = citiesChips.scrollLeft <= 0;
+    const isAtEnd = citiesChips.scrollLeft >= citiesChips.scrollWidth - citiesChips.clientWidth;
+
+    scrollLeft.style.display = isAtStart ? 'none' : 'flex';
+    scrollRight.style.display = isAtEnd ? 'none' : 'flex';
+  }
 } 

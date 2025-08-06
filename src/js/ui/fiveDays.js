@@ -4,10 +4,13 @@
 /**
  * Render 5-day forecast section with expandable 'More Info' per day
  * @param {Object} forecastData - Data from OpenWeatherMap 5-day forecast API
- * @param {string} expandedDate - Date string of the expanded card, or ''
+ * @param {boolean} allExpanded - Whether all cards should be expanded
+ * @param {boolean} showChart - Whether to show chart button
+ * @param {string} cityName - The city name
+ * @param {string} countryName - The country name
  * @returns {string} HTML string
  */
-export function renderFiveDayForecast(forecastData, allExpanded = false, showChart = false) {
+export function renderFiveDayForecast(forecastData, allExpanded = false, showChart = false, cityName = '', countryName = '') {
   if (!forecastData || !forecastData.list) return '<div class="error">No forecast data available.</div>';
   // Group forecast by day
   const days = {};
@@ -37,8 +40,18 @@ export function renderFiveDayForecast(forecastData, allExpanded = false, showCha
   });
 
   const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  
+  // Create location header
+  const locationHeader = cityName ? `
+    <div class="forecast-location-header" style="text-align:center; margin-bottom:24px; padding:0 16px;">
+      <div class="forecast-city-name" style="font-size:1.4rem; font-weight:700; color:#fff; margin-bottom:4px; letter-spacing:0.5px;">${cityName}</div>
+      ${countryName ? `<div class="forecast-country-name" style="font-size:1rem; color:#ffd54f; font-weight:500; opacity:0.9; letter-spacing:0.3px;">${countryName}</div>` : ''}
+    </div>
+  ` : '';
+  
   return `
     <section class="five-days-forecast">
+      ${locationHeader}
       <div class="forecast-cards">
         ${daily.map((day, idx) => {
           const temp = Math.round(day.main.temp);
@@ -72,7 +85,10 @@ export function renderFiveDayForecast(forecastData, allExpanded = false, showCha
         }).join('')}
       </div>
       <div class="show-chart-btn-container">
-        <button id="show-chart-btn" class="nav-btn">${showChart ? 'Hide Chart 📉' : 'Show Chart 📈'}</button>
+        <button id="show-chart-btn" class="nav-btn">
+          <span class="chart-btn-text">${showChart ? 'Hide Chart' : 'Show Chart'}</span>
+          <span class="chart-btn-icon">${showChart ? '📉' : '📈'}</span>
+        </button>
       </div>
     </section> 
   `;
