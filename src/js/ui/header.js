@@ -1,7 +1,6 @@
 // Header functionality for the weather app
 let savedCities = ['Kyiv', 'Paris', 'Vinnytsia', 'Warsaw'];
 let currentCity = 'Kyiv';
-let showNextArrow = false; // Track if next arrow should be shown
 let hiddenCities = []; // Track cities that are added but hidden
 
 export function initHeader(onCitySelect) {
@@ -31,7 +30,7 @@ export function initHeader(onCitySelect) {
           </div>
         </div>
         <button class="scroll-arrow scroll-right" id="scroll-right">›</button>
-        <button class="next-move-arrow" id="next-move-arrow" style="display: none;" title="Next city">→</button>
+        <button class="country-button" id="country-button" style="display: none;" title="Country Info">🌍</button>
       </div>
     </header>
   `;
@@ -56,7 +55,7 @@ function initializeHeaderEvents(onCitySelect) {
   const citiesChips = document.getElementById('cities-chips');
   const scrollLeft = document.getElementById('scroll-left');
   const scrollRight = document.getElementById('scroll-right');
-  const nextMoveArrow = document.getElementById('next-move-arrow');
+  const countryButton = document.getElementById('country-button');
 
 
   // Search functionality
@@ -80,22 +79,7 @@ function initializeHeaderEvents(onCitySelect) {
     });
   }
 
-  // Next move arrow functionality
-  if (nextMoveArrow) {
-    nextMoveArrow.addEventListener('click', () => {
-      // Scroll to show hidden cities when next arrow is clicked
-      if (hiddenCities.length > 0) {
-        scrollToRevealHiddenCities();
-        return;
-      }
-      
-      // If no hidden cities, cycle through existing cities
-      const currentIndex = savedCities.indexOf(currentCity);
-      const nextIndex = (currentIndex + 1) % savedCities.length;
-      const nextCity = savedCities[nextIndex];
-      handleCitySelect(nextCity, onCitySelect);
-    });
-  }
+
 
 
   // City chips functionality
@@ -111,25 +95,77 @@ function initializeHeaderEvents(onCitySelect) {
     });
   }
 
-  // Scroll functionality
+  // Enhanced scroll functionality
   if (scrollLeft) {
     scrollLeft.addEventListener('click', () => {
-      citiesChips.scrollBy({ left: -200, behavior: 'smooth' });
+      console.log('Left scroll arrow clicked'); // Debug log
+      const scrollAmount = Math.min(200, citiesChips.scrollLeft);
+      citiesChips.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+      // Show country button when scroll arrow is pressed
+      showCountryButton();
     });
   }
 
   if (scrollRight) {
     scrollRight.addEventListener('click', () => {
-      citiesChips.scrollBy({ left: 200, behavior: 'smooth' });
+      console.log('Right scroll arrow clicked'); // Debug log
+      const maxScroll = citiesChips.scrollWidth - citiesChips.clientWidth;
+      const remainingScroll = maxScroll - citiesChips.scrollLeft;
+      const scrollAmount = Math.min(200, remainingScroll);
+      citiesChips.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+      // Show country button when scroll arrow is pressed
+      showCountryButton();
     });
+  }
+
+  // Country button functionality
+  if (countryButton) {
+    console.log('Country button found and initialized'); // Debug log
+    countryButton.addEventListener('click', () => {
+      handleCountryButtonClick();
+    });
+  } else {
+    console.log('Country button not found during initialization'); // Debug log
   }
 
   // Update scroll arrows visibility
   updateScrollArrows();
   citiesChips.addEventListener('scroll', updateScrollArrows);
   
-  // Update next arrow visibility
-  updateNextArrowVisibility();
+  // Add keyboard support for scrolling
+  citiesChips.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      scrollLeft.click();
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      scrollRight.click();
+    }
+  });
+  
+  // Add touch/swipe support for mobile
+  let startX = 0;
+  let isDragging = false;
+  
+  citiesChips.addEventListener('touchstart', (e) => {
+    startX = e.touches[0].clientX;
+    isDragging = true;
+  });
+  
+  citiesChips.addEventListener('touchmove', (e) => {
+    if (!isDragging) return;
+    e.preventDefault();
+    const currentX = e.touches[0].clientX;
+    const diff = startX - currentX;
+    citiesChips.scrollLeft += diff;
+    startX = currentX;
+  });
+  
+  citiesChips.addEventListener('touchend', () => {
+    isDragging = false;
+  });
+  
+
 
 
 }
@@ -142,9 +178,7 @@ function handleCitySelect(city, onCitySelect, isFromSearch = false) {
     if (isFromSearch) {
       // If from search, add to bottom of hidden cities
       hiddenCities.push(city);
-      showNextArrow = true; // Show next arrow to reveal hidden cities
       updateCityChips(); // Update to show hidden chips
-      updateNextArrowVisibility();
     } else {
       // If from chip click or next button, add to visible cities
       savedCities.unshift(city);
@@ -181,11 +215,7 @@ function removeCity(city) {
   }
   updateCityChips();
   
-  // Hide next arrow if no cities left and no hidden cities
-  if (savedCities.length <= 1 && hiddenCities.length === 0) {
-    showNextArrow = false;
-  }
-  updateNextArrowVisibility();
+
 }
 
 function updateCityChips() {
@@ -210,57 +240,9 @@ function updateCityChips() {
   }
 }
 
-function scrollToRevealHiddenCities() {
-  const citiesChips = document.getElementById('cities-chips');
-  if (citiesChips && hiddenCities.length > 0) {
-    // Find the first hidden chip
-    const hiddenChip = citiesChips.querySelector('.hidden-chip');
-    if (hiddenChip) {
-      // Get the city name from the chip
-      const cityToReveal = hiddenChip.dataset.city;
-      
-      // Scroll to show the hidden chip
-      hiddenChip.scrollIntoView({ 
-        behavior: 'smooth', 
-        block: 'nearest', 
-        inline: 'center' 
-      });
-      
-      // Reveal the hidden chip with animation
-      setTimeout(() => {
-        hiddenChip.classList.add('revealing');
-        
-        // Move city from hidden to visible after animation
-        setTimeout(() => {
-          hiddenCities = hiddenCities.filter(city => city !== cityToReveal);
-          if (!savedCities.includes(cityToReveal)) {
-            savedCities.push(cityToReveal); // Add to end of visible cities
-          }
-          updateCityChips();
-          updateNextArrowVisibility();
-        }, 500);
-      }, 300);
-    }
-  }
-}
 
-function updateNextArrowVisibility() {
-  const nextMoveArrow = document.getElementById('next-move-arrow');
-  if (nextMoveArrow) {
-    // Show arrow if there are hidden cities or if showNextArrow is true and there are multiple cities
-    const shouldShow = hiddenCities.length > 0 || (showNextArrow && savedCities.length > 1);
-    nextMoveArrow.style.display = shouldShow ? 'flex' : 'none';
-    
-    // Add visual indicator for hidden cities
-    if (hiddenCities.length > 0) {
-      nextMoveArrow.classList.add('has-hidden');
-      nextMoveArrow.title = `Scroll to reveal hidden cities (${hiddenCities.length} hidden)`;
-    } else {
-      nextMoveArrow.classList.remove('has-hidden');
-      nextMoveArrow.title = 'Next city';
-    }
-  }
-}
+
+
 
 function updateScrollArrows() {
   const citiesChips = document.getElementById('cities-chips');
@@ -268,10 +250,75 @@ function updateScrollArrows() {
   const scrollRight = document.getElementById('scroll-right');
 
   if (citiesChips && scrollLeft && scrollRight) {
-    const isAtStart = citiesChips.scrollLeft <= 0;
-    const isAtEnd = citiesChips.scrollLeft >= citiesChips.scrollWidth - citiesChips.clientWidth;
+    const isAtStart = citiesChips.scrollLeft <= 5; // Small threshold for better UX
+    const isAtEnd = citiesChips.scrollLeft >= citiesChips.scrollWidth - citiesChips.clientWidth - 5;
+    const hasOverflow = citiesChips.scrollWidth > citiesChips.clientWidth;
 
-    scrollLeft.style.display = isAtStart ? 'none' : 'flex';
-    scrollRight.style.display = isAtEnd ? 'none' : 'flex';
+    // Show/hide arrows with smooth transitions
+    scrollLeft.style.display = (isAtStart || !hasOverflow) ? 'none' : 'flex';
+    scrollRight.style.display = (isAtEnd || !hasOverflow) ? 'none' : 'flex';
+    
+    // Add visual feedback
+    scrollLeft.style.opacity = isAtStart ? '0.5' : '1';
+    scrollRight.style.opacity = isAtEnd ? '0.5' : '1';
   }
+}
+
+function showCountryButton() {
+  const countryButton = document.getElementById('country-button');
+  if (countryButton) {
+    console.log('Showing country button'); // Debug log
+    
+    // Force the button to be visible
+    countryButton.style.display = 'flex';
+    countryButton.style.visibility = 'visible';
+    countryButton.style.opacity = '1';
+    countryButton.style.transform = 'translateY(-50%) scale(1)';
+    countryButton.style.animation = 'fadeInScale 0.3s ease-out';
+    
+    // Ensure it's above other elements
+    countryButton.style.zIndex = '1000';
+    
+    console.log('Country button styles applied:', {
+      display: countryButton.style.display,
+      opacity: countryButton.style.opacity,
+      visibility: countryButton.style.visibility
+    });
+    
+    // Country button will stay visible until next scroll arrow press or manual click
+  } else {
+    console.log('Country button not found'); // Debug log
+  }
+}
+
+function hideCountryButton() {
+  const countryButton = document.getElementById('country-button');
+  if (countryButton) {
+    console.log('Hiding country button'); // Debug log
+    countryButton.style.animation = 'fadeOutScale 0.3s ease-out';
+    countryButton.style.opacity = '0';
+    setTimeout(() => {
+      countryButton.style.display = 'none';
+      countryButton.style.visibility = 'hidden';
+    }, 300);
+  }
+}
+
+function handleCountryButtonClick() {
+  // Get current city and show country information
+  const city = currentCity;
+  if (city) {
+    // You can implement country information display here
+    // For now, let's show a simple alert with the city name
+    alert(`Country information for ${city} would be displayed here.`);
+    
+    // Hide the button after clicking
+    hideCountryButton();
+  }
+}
+
+// Test function to manually show country button (for debugging)
+export function testShowCountryButton() {
+  console.log('Testing country button show function');
+  showCountryButton();
 } 

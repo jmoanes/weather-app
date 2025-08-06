@@ -98,11 +98,13 @@ body {
   right: -20px;
 }
 
-.next-move-arrow {
-  right: -45px;
-  width: 28px;
-  height: 28px;
-  font-size: 16px;
+
+
+.country-button {
+  right: -110px;
+  width: 32px;
+  height: 32px;
+  font-size: 18px;
 }
 
 
@@ -509,7 +511,7 @@ body {
   }
   
   /* Better tap highlights */
-  .nav-btn, .header-city-chip, .search-btn-inside, .more-info-btn, .next-move-arrow {
+  .nav-btn, .header-city-chip, .search-btn-inside, .more-info-btn {
     -webkit-tap-highlight-color: rgba(255,255,255,0.3);
     -webkit-touch-callout: none;
     -webkit-user-select: none;
@@ -519,7 +521,7 @@ body {
     user-select: none;
   }
   /* Ensure minimum touch target size */
-  .nav-btn, .header-city-chip, .search-btn-inside, .next-move-arrow {
+  .nav-btn, .header-city-chip, .search-btn-inside {
     min-height: 44px;
     min-width: 44px;
   }
@@ -721,12 +723,14 @@ body {
     font-size: 1.1rem;
   }
   
-  /* Tablet next move arrow */
-  .next-move-arrow {
-    right: -50px;
-    width: 32px;
-    height: 32px;
-    font-size: 18px;
+
+  
+  /* Tablet country button */
+  .country-button {
+    right: -115px;
+    width: 36px;
+    height: 36px;
+    font-size: 19px;
   }
 }
 
@@ -751,11 +755,13 @@ body {
     right: -20px;
   }
   
-  /* Desktop next move arrow */
-  .next-move-arrow {
-    right: -55px;
-    width: 36px;
-    height: 36px;
+
+  
+  /* Desktop country button */
+  .country-button {
+    right: -125px;
+    width: 40px;
+    height: 40px;
     font-size: 20px;
   }
   
