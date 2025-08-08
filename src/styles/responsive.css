@@ -67,6 +67,40 @@ body {
   min-width: 40px;
 }
 
+/* Search Results Container Responsive Styles */
+.search-results-container {
+  max-height: 250px;
+  margin-top: 4px;
+}
+
+.search-result-item {
+  padding: 10px 12px;
+}
+
+.search-result-text {
+  font-size: 13px;
+}
+
+.search-result-add {
+  width: 20px;
+  height: 20px;
+  font-size: 14px;
+}
+
+.pagination-controls {
+  padding: 8px 12px;
+}
+
+.pagination-info {
+  font-size: 11px;
+}
+
+.pagination-arrow {
+  width: 28px;
+  height: 28px;
+  font-size: 16px;
+}
+
 .header-cities-chips {
   margin: 12px 8px 0 8px;
   gap: 8px;

@@ -3,6 +3,12 @@ let savedCities = ['Kyiv', 'Paris', 'Vinnytsia', 'Warsaw'];
 let currentCity = 'Kyiv';
 let hiddenCities = []; // Track cities that are added but hidden
 
+// Pagination state for search results
+let searchResults = [];
+let currentPage = 0;
+let itemsPerPage = 4;
+let totalPages = 0;
+
 export function initHeader(onCitySelect) {
   const headerHTML = `
     <header class="header">
@@ -14,6 +20,18 @@ export function initHeader(onCitySelect) {
           <button class="search-btn-inside" id="search-btn">
             <span class="search-icon">⭐</span>
           </button>
+        </div>
+        
+        <!-- Search Results Container with Pagination -->
+        <div class="search-results-container" id="search-results-container" style="display: none;">
+          <div class="search-results" id="search-results">
+            <!-- Search results will be populated here -->
+          </div>
+          <div class="pagination-controls" id="pagination-controls">
+            <button class="pagination-arrow pagination-prev" id="pagination-prev" style="display: none;">‹</button>
+            <span class="pagination-info" id="pagination-info"></span>
+            <button class="pagination-arrow pagination-next" id="pagination-next" style="display: none;">›</button>
+          </div>
         </div>
       </div>
       
@@ -30,7 +48,7 @@ export function initHeader(onCitySelect) {
           </div>
         </div>
         <button class="scroll-arrow scroll-right" id="scroll-right">›</button>
-        <button class="country-button" id="country-button" style="display: none;" title="Country Info">🌍</button>
+        <button class="country-button" id="country-button" style="display: none;" title="Country Info - Double click or press 'N' to scroll to next country">🌍</button>
       </div>
     </header>
   `;
@@ -58,13 +76,23 @@ function initializeHeaderEvents(onCitySelect) {
   const countryButton = document.getElementById('country-button');
 
 
-  // Search functionality
+  // Search functionality with pagination
   if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+      const query = e.target.value.trim();
+      if (query.length >= 2) {
+        performSearch(query, onCitySelect);
+      } else {
+        hideSearchResults();
+      }
+    });
+
     searchInput.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') {
         const city = searchInput.value.trim();
         if (city) {
           handleCitySelect(city, onCitySelect, true); // true = from search
+          hideSearchResults();
         }
       }
     });
@@ -75,6 +103,7 @@ function initializeHeaderEvents(onCitySelect) {
       const city = searchInput.value.trim();
       if (city) {
         handleCitySelect(city, onCitySelect, true); // true = from search
+        hideSearchResults();
       }
     });
   }
@@ -118,15 +147,20 @@ function initializeHeaderEvents(onCitySelect) {
     });
   }
 
-  // Country button functionality
+  // Add country button scrolling functionality
+  let countryButtonScrollTimeout;
   if (countryButton) {
-    console.log('Country button found and initialized'); // Debug log
     countryButton.addEventListener('click', () => {
       handleCountryButtonClick();
     });
-  } else {
-    console.log('Country button not found during initialization'); // Debug log
+    
+    // Add scroll to next country functionality
+    countryButton.addEventListener('dblclick', () => {
+      scrollToNextCountry();
+    });
   }
+
+
 
   // Update scroll arrows visibility
   updateScrollArrows();
@@ -140,8 +174,45 @@ function initializeHeaderEvents(onCitySelect) {
     } else if (e.key === 'ArrowRight') {
       e.preventDefault();
       scrollRight.click();
+    } else if (e.key === 'Enter' && e.target.classList.contains('header-city-chip')) {
+      // Handle Enter key on city chips
+      const city = e.target.dataset.city;
+      if (city) {
+        handleCitySelect(city, onCitySelect);
+      }
     }
   });
+  
+  // Add global keyboard support for country button scrolling
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'n' || e.key === 'N') {
+      // Press 'N' to scroll to next country
+      e.preventDefault();
+      scrollToNextCountry();
+    }
+  });
+
+  // Pagination controls
+  const paginationPrev = document.getElementById('pagination-prev');
+  const paginationNext = document.getElementById('pagination-next');
+
+  if (paginationPrev) {
+    paginationPrev.addEventListener('click', () => {
+      if (currentPage > 0) {
+        currentPage--;
+        displaySearchResults();
+      }
+    });
+  }
+
+  if (paginationNext) {
+    paginationNext.addEventListener('click', () => {
+      if (currentPage < totalPages - 1) {
+        currentPage++;
+        displaySearchResults();
+      }
+    });
+  }
   
   // Add touch/swipe support for mobile
   let startX = 0;
@@ -172,6 +243,9 @@ function initializeHeaderEvents(onCitySelect) {
 
 function handleCitySelect(city, onCitySelect, isFromSearch = false) {
   currentCity = city;
+  
+  // Hide country button when a new city is selected
+  hideCountryButton();
   
   // Add city to saved cities if not already there
   if (!savedCities.includes(city) && !hiddenCities.includes(city)) {
@@ -279,6 +353,9 @@ function showCountryButton() {
     // Ensure it's above other elements
     countryButton.style.zIndex = '1000';
     
+    // Update the title to include scrolling functionality hint
+    countryButton.title = 'Country Info - Double click or press "N" to scroll to next country';
+    
     console.log('Country button styles applied:', {
       display: countryButton.style.display,
       opacity: countryButton.style.opacity,
@@ -317,8 +394,166 @@ function handleCountryButtonClick() {
   }
 }
 
+function scrollToNextCountry() {
+  const citiesChips = document.getElementById('cities-chips');
+  const countryButton = document.getElementById('country-button');
+  if (!citiesChips) return;
+  
+  // Add scrolling visual feedback to country button
+  if (countryButton) {
+    countryButton.classList.add('scrolling');
+    setTimeout(() => {
+      countryButton.classList.remove('scrolling');
+    }, 1500);
+  }
+  
+  // Get all city chips
+  const cityChips = citiesChips.querySelectorAll('.header-city-chip');
+  if (cityChips.length === 0) return;
+  
+  // Find the currently selected city chip
+  const currentChip = citiesChips.querySelector('.header-city-chip.selected');
+  if (!currentChip) return;
+  
+  // Find the next city chip
+  const currentIndex = Array.from(cityChips).indexOf(currentChip);
+  const nextIndex = (currentIndex + 1) % cityChips.length;
+  const nextChip = cityChips[nextIndex];
+  
+  if (nextChip) {
+    // Scroll to the next city chip
+    nextChip.scrollIntoView({ 
+      behavior: 'smooth', 
+      block: 'nearest', 
+      inline: 'center' 
+    });
+    
+    // Select the next city
+    const nextCity = nextChip.dataset.city;
+    if (nextCity) {
+      // Simulate a click on the next city chip
+      setTimeout(() => {
+        nextChip.click();
+      }, 300);
+    }
+  }
+}
+
 // Test function to manually show country button (for debugging)
 export function testShowCountryButton() {
   console.log('Testing country button show function');
   showCountryButton();
+}
+
+// Search and pagination functions
+function performSearch(query, onCitySelect) {
+  // Store the callback for later use
+  window.onCitySelect = onCitySelect;
+  
+  // Simulate search results - in a real app, this would be an API call
+  const mockSearchResults = [
+    'New York, USA',
+    'London, UK',
+    'Paris, France',
+    'Tokyo, Japan',
+    'Berlin, Germany',
+    'Rome, Italy',
+    'Madrid, Spain',
+    'Amsterdam, Netherlands',
+    'Vienna, Austria',
+    'Prague, Czech Republic',
+    'Budapest, Hungary',
+    'Warsaw, Poland'
+  ].filter(city => city.toLowerCase().includes(query.toLowerCase()));
+
+  searchResults = mockSearchResults;
+  currentPage = 0;
+  totalPages = Math.ceil(searchResults.length / itemsPerPage);
+  
+  if (searchResults.length > 0) {
+    displaySearchResults();
+    showSearchResults();
+  } else {
+    hideSearchResults();
+  }
+}
+
+function displaySearchResults() {
+  const searchResultsContainer = document.getElementById('search-results');
+  const paginationInfo = document.getElementById('pagination-info');
+  const paginationPrev = document.getElementById('pagination-prev');
+  const paginationNext = document.getElementById('pagination-next');
+
+  if (!searchResultsContainer) return;
+
+  // Calculate start and end indices for current page
+  const startIndex = currentPage * itemsPerPage;
+  const endIndex = Math.min(startIndex + itemsPerPage, searchResults.length);
+  const currentPageResults = searchResults.slice(startIndex, endIndex);
+
+  // Display search results
+  const resultsHTML = currentPageResults.map(city => `
+    <div class="search-result-item" data-city="${city}">
+      <span class="search-result-text">${city}</span>
+      <button class="search-result-add" data-city="${city}">+</button>
+    </div>
+  `).join('');
+
+  searchResultsContainer.innerHTML = resultsHTML;
+
+  // Update pagination info
+  if (paginationInfo) {
+    paginationInfo.textContent = `${startIndex + 1}-${endIndex} of ${searchResults.length}`;
+  }
+
+  // Show/hide pagination arrows
+  if (paginationPrev) {
+    paginationPrev.style.display = currentPage > 0 ? 'flex' : 'none';
+  }
+  if (paginationNext) {
+    paginationNext.style.display = currentPage < totalPages - 1 ? 'flex' : 'none';
+  }
+
+  // Add event listeners to search result items
+  const searchResultItems = searchResultsContainer.querySelectorAll('.search-result-item');
+  searchResultItems.forEach(item => {
+    item.addEventListener('click', () => {
+      const city = item.dataset.city;
+      if (city) {
+        // Extract just the city name (remove country part)
+        const cityName = city.split(',')[0].trim();
+        handleCitySelect(cityName, window.onCitySelect || (() => {}), true);
+        hideSearchResults();
+      }
+    });
+  });
+
+  // Add event listeners to add buttons
+  const addButtons = searchResultsContainer.querySelectorAll('.search-result-add');
+  addButtons.forEach(button => {
+    button.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const city = button.dataset.city;
+      if (city) {
+        // Extract just the city name (remove country part)
+        const cityName = city.split(',')[0].trim();
+        handleCitySelect(cityName, window.onCitySelect || (() => {}), true);
+        hideSearchResults();
+      }
+    });
+  });
+}
+
+function showSearchResults() {
+  const searchResultsContainer = document.getElementById('search-results-container');
+  if (searchResultsContainer) {
+    searchResultsContainer.style.display = 'block';
+  }
+}
+
+function hideSearchResults() {
+  const searchResultsContainer = document.getElementById('search-results-container');
+  if (searchResultsContainer) {
+    searchResultsContainer.style.display = 'none';
+  }
 } 
