@@ -499,6 +499,26 @@ function initializeHeaderEvents(onCitySelect) {
   });
   
 
+  // Make country labels clickable to open the country's cities list
+  document.addEventListener('click', (evt) => {
+    const target = evt.target.closest('.weather-country-link, .forecast-country-name');
+    if (!target) return;
+    const countryName = (target.dataset.countryName || target.textContent || '').trim();
+    let countryCode = target.dataset.countryCode || '';
+    if (!countryCode && countryName) {
+      const match = countryData.find(c => c.name.toLowerCase() === countryName.toLowerCase());
+      if (match) countryCode = match.code;
+    }
+    if (!countryCode || !countryName) return;
+    const searchInput = document.getElementById('city-search');
+    if (searchInput) {
+      searchInput.value = countryName;
+      searchInput.placeholder = `Search cities in ${countryName}...`;
+      searchInput.focus();
+    }
+    showCitiesInCountry(countryCode, countryName, onCitySelect);
+  });
+
 
 
 }

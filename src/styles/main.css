@@ -1796,3 +1796,21 @@ body::before {
     opacity: 0;
   }
 } 
+
+/* Clickable country label (home header and 5-days header) */
+.weather-country-link,
+.forecast-country-name.weather-country-link {
+  cursor: pointer;
+}
+.weather-country-link:hover,
+.forecast-country-name.weather-country-link:hover {
+  text-decoration: underline;
+}
+
+/* Also make forecast header country clickable even without extra class */
+.forecast-country-name {
+  cursor: pointer;
+}
+.forecast-country-name:hover {
+  text-decoration: underline;
+}
