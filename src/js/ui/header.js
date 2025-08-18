@@ -94,14 +94,7 @@ export function initHeader(onCitySelect) {
           </button>
         </div>
         
-        <!-- Quick Country Access Buttons -->
-        <div class="quick-countries" style="display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; justify-content: center;">
-          <button class="quick-country-btn" data-country="US" style="padding: 6px 12px; background: #e3f2fd; color: #1976d2; border: 1px solid #bbdefb; border-radius: 20px; cursor: pointer; font-size: 12px; font-weight: 500; transition: all 0.2s ease;">🇺🇸 USA</button>
-          <button class="quick-country-btn" data-country="GB" style="padding: 6px 12px; background: #e3f2fd; color: #1976d2; border: 1px solid #bbdefb; border-radius: 20px; cursor: pointer; font-size: 12px; font-weight: 500; transition: all 0.2s ease;">🇬🇧 UK</button>
-          <button class="quick-country-btn" data-country="PH" style="padding: 6px 12px; background: #e3f2fd; color: #1976d2; border: 1px solid #bbdefb; border-radius: 20px; cursor: pointer; font-size: 12px; font-weight: 500; transition: all 0.2s ease;">🇵🇭 Philippines</button>
-          <button class="quick-country-btn" data-country="JP" style="padding: 6px 12px; background: #e3f2fd; color: #1976d2; border: 1px solid #bbdefb; border-radius: 20px; cursor: pointer; font-size: 12px; font-weight: 500; transition: all 0.2s ease;">🇯🇵 Japan</button>
-          <button class="quick-country-btn" data-country="AU" style="padding: 6px 12px; background: #e3f2fd; color: #1976d2; border: 1px solid #bbdefb; border-radius: 20px; cursor: pointer; font-size: 12px; font-weight: 500; transition: all 0.2s ease;">🇦🇺 Australia</button>
-        </div>
+        
         
         <!-- Search Results Container - Hidden since we're not using real-time search -->
         <div class="search-results-container" id="search-results-container" style="display: none;">
@@ -252,47 +245,7 @@ function initializeHeaderEvents(onCitySelect) {
     });
   }
 
-  // Add event listeners for quick country buttons
-  const quickCountryBtns = document.querySelectorAll('.quick-country-btn');
-  quickCountryBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const countryCode = btn.dataset.country;
-      const country = countryData.find(c => c.code === countryCode);
-      if (country) {
-        // Immediately show country name in input field
-        searchInput.value = country.name;
-        searchInput.placeholder = `Search cities in ${country.name}...`;
-        searchInput.focus();
-        
-        // Show cities in that country
-        showCitiesInCountry(countryCode, country.name, onCitySelect);
-        
-        // Add visual feedback
-        btn.style.background = '#1976d2';
-        btn.style.color = 'white';
-        btn.style.transform = 'scale(1.05)';
-        btn.style.boxShadow = '0 4px 12px rgba(25, 118, 210, 0.4)';
-        
-        setTimeout(() => {
-          btn.style.background = '#e3f2fd';
-          btn.style.color = '#1976d2';
-          btn.style.transform = 'scale(1)';
-          btn.style.boxShadow = 'none';
-        }, 1000);
-      }
-    });
-
-    // Add hover effects for quick country buttons
-    btn.addEventListener('mouseenter', () => {
-      btn.style.transform = 'translateY(-2px)';
-      btn.style.boxShadow = '0 4px 12px rgba(25, 118, 210, 0.3)';
-    });
-    
-    btn.addEventListener('mouseleave', () => {
-      btn.style.transform = 'translateY(0)';
-      btn.style.boxShadow = 'none';
-    });
-  });
+  // Quick country buttons removed
 
   // Add event listeners for main search and clear buttons
   const mainSearchBtn = document.getElementById('main-search-btn');
