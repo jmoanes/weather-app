@@ -70,37 +70,35 @@ export function initHeader(onCitySelect) {
     <header class="header">
       
       <div class="header-searchbar">
-        <div class="search-input-wrapper" style="width: 100%; max-width: 1000px; margin: 0 auto;">
+        <div class="search-input-wrapper">
           <span class="searchbar-icon-inside">🔍</span>
-          <input type="text" class="search-input-rounded" placeholder="Search for a city or country..." id="city-search" autocomplete="off" spellcheck="false" maxlength="100" style="position: relative; z-index: 9999; background: white !important; color: black !important; border: 1px solid #ccc !important; padding: 16px 20px !important; width: 100% !important; box-sizing: border-box !important; font-size: 16px !important; border-radius: 25px !important;">
-          <button class="search-btn-inside" id="search-btn" style="background: #1976d2 !important; color: white !important; border: none !important; border-radius: 50% !important; width: 45px !important; height: 45px !important; display: flex !important; align-items: center !important; justify-content: center !important; cursor: pointer !important; margin-right: 8px !important; box-shadow: 0 2px 8px rgba(25, 118, 210, 0.3) !important; transition: all 0.3s ease !important;">
-            <span class="search-icon" style="color: white !important; font-size: 18px !important;">🔍</span>
+          <input type="text" class="search-input-rounded" placeholder="Search for a city or country..." id="city-search" autocomplete="off" spellcheck="false" maxlength="100">
+          <button class="search-btn-inside" id="search-btn" aria-label="Search">
+            <span class="search-icon">🔍</span>
           </button>
         </div>
         
         <!-- Enhanced Country Dropdown Container -->
-        <div class="country-dropdown-container" id="country-dropdown-container" style="display: none; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); background: white; border: 1px solid #ddd; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.15); z-index: 10000; max-height: 300px; overflow-y: auto; margin-top: 8px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); width: 1000px; max-width: 90vw;">
+        <div class="country-dropdown-container" id="country-dropdown-container">
           <!-- Country suggestions will be populated here -->
         </div>
         
         <!-- Search Button Row -->
-        <div class="search-actions" style="display: flex; gap: 16px; margin-top: 20px; justify-content: center; align-items: center;">
-          <button class="main-search-btn" id="main-search-btn" style="padding: 16px 32px; background: linear-gradient(135deg, #1976d2, #1565c0, #0d47a1); color: white; border: none; border-radius: 30px; cursor: pointer; font-size: 16px; font-weight: 700; box-shadow: 0 6px 20px rgba(25, 118, 210, 0.4), 0 2px 8px rgba(0, 0, 0, 0.1); transition: all 0.3s ease; display: flex; align-items: center; gap: 12px; letter-spacing: 0.5px; text-transform: uppercase; min-width: 180px; justify-content: center;">
-            <span style="font-size: 18px; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));">🔍</span>
+        <div class="search-actions">
+          <button class="main-search-btn" id="main-search-btn">
+            <span class="search-cta-icon">🔍</span>
             Search
           </button>
-          <button class="clear-search-btn" id="clear-search-btn" style="padding: 14px 28px; background: linear-gradient(135deg, #f5f5f5, #e0e0e0); color: #555; border: 1px solid #ddd; border-radius: 25px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-            Clear
-          </button>
+          <button class="clear-search-btn" id="clear-search-btn">Clear</button>
         </div>
         
         <!-- Quick Country Access Buttons -->
-        <div class="quick-countries" style="display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; justify-content: center;">
-          <button class="quick-country-btn" data-country="US" style="padding: 6px 12px; background: #e3f2fd; color: #1976d2; border: 1px solid #bbdefb; border-radius: 20px; cursor: pointer; font-size: 12px; font-weight: 500; transition: all 0.2s ease;">🇺🇸 USA</button>
-          <button class="quick-country-btn" data-country="GB" style="padding: 6px 12px; background: #e3f2fd; color: #1976d2; border: 1px solid #bbdefb; border-radius: 20px; cursor: pointer; font-size: 12px; font-weight: 500; transition: all 0.2s ease;">🇬🇧 UK</button>
-          <button class="quick-country-btn" data-country="PH" style="padding: 6px 12px; background: #e3f2fd; color: #1976d2; border: 1px solid #bbdefb; border-radius: 20px; cursor: pointer; font-size: 12px; font-weight: 500; transition: all 0.2s ease;">🇵🇭 Philippines</button>
-          <button class="quick-country-btn" data-country="JP" style="padding: 6px 12px; background: #e3f2fd; color: #1976d2; border: 1px solid #bbdefb; border-radius: 20px; cursor: pointer; font-size: 12px; font-weight: 500; transition: all 0.2s ease;">🇯🇵 Japan</button>
-          <button class="quick-country-btn" data-country="AU" style="padding: 6px 12px; background: #e3f2fd; color: #1976d2; border: 1px solid #bbdefb; border-radius: 20px; cursor: pointer; font-size: 12px; font-weight: 500; transition: all 0.2s ease;">🇦🇺 Australia</button>
+        <div class="quick-countries">
+          <button class="quick-country-btn" data-country="US">🇺🇸 USA</button>
+          <button class="quick-country-btn" data-country="GB">🇬🇧 UK</button>
+          <button class="quick-country-btn" data-country="PH">🇵🇭 Philippines</button>
+          <button class="quick-country-btn" data-country="JP">🇯🇵 Japan</button>
+          <button class="quick-country-btn" data-country="AU">🇦🇺 Australia</button>
         </div>
         
         <!-- Search Results Container - Hidden since we're not using real-time search -->
