@@ -259,13 +259,8 @@ function initializeHeaderEvents(onCitySelect) {
       const countryCode = btn.dataset.country;
       const country = countryData.find(c => c.code === countryCode);
       if (country) {
-        // Immediately show country name in input field
-        searchInput.value = country.name;
-        searchInput.placeholder = `Search cities in ${country.name}...`;
-        searchInput.focus();
-        
-        // Show cities in that country
-        showCitiesInCountry(countryCode, country.name, onCitySelect);
+        // Redirect directly to the country's default city
+        redirectToCountryDefaultCity(countryCode, country.name, onCitySelect);
         
         // Add visual feedback
         btn.style.background = '#1976d2';
