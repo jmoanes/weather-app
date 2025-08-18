@@ -542,6 +542,24 @@ function handleCitySelect(city, onCitySelect, isFromSearch = false) {
   }
 }
 
+// Redirect to country's default city (first city in its list)
+function redirectToCountryDefaultCity(countryCode, countryName, onCitySelect) {
+  const searchInput = document.getElementById('city-search');
+  const country = countryData.find(c => c.code === countryCode);
+  if (!country || !country.cities || country.cities.length === 0) {
+    // Fallback to showing cities if none defined
+    showCitiesInCountry(countryCode, countryName, onCitySelect);
+    return;
+  }
+  const defaultCity = country.cities[0];
+  if (searchInput) {
+    searchInput.value = `${countryName} - ${defaultCity}`;
+  }
+  if (onCitySelect) {
+    handleCitySelect(defaultCity, onCitySelect, true);
+  }
+}
+
 function removeCity(city) {
   savedCities = savedCities.filter(c => c !== city);
   hiddenCities = hiddenCities.filter(c => c !== city); // Also remove from hidden cities
@@ -737,6 +755,7 @@ function hideSearchResults() {
 function showCountryDropdown(query, onCitySelect) {
   const dropdownContainer = document.getElementById('country-dropdown-container');
   if (!dropdownContainer) return;
+  const searchInput = document.getElementById('city-search');
 
   // Filter countries and cities based on query
   const suggestions = [];
@@ -803,11 +822,8 @@ function showCountryDropdown(query, onCitySelect) {
               handleCitySelect(name, onCitySelect, true);
             }
           } else {
-            // For countries, show cities in that country and keep country visible
-            searchInput.value = name;
-            searchInput.placeholder = `Search cities in ${name}...`;
-            searchInput.focus();
-            showCitiesInCountry(code, name, onCitySelect);
+            // For countries, directly redirect to default city (first in list)
+            redirectToCountryDefaultCity(code, name, onCitySelect);
           }
           hideCountryDropdown();
         });
@@ -818,53 +834,13 @@ function showCountryDropdown(query, onCitySelect) {
         item.style.transform = 'translateX(4px)';
         item.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
         
-        // Auto-select country after hover delay
+        // Highlight country items on hover
         if (item.dataset.type === 'country') {
           clearTimeout(item.hoverTimeout);
-          
-          // Add visual indicator for hover-to-select
           item.style.borderLeft = '4px solid #1976d2';
           item.style.paddingLeft = '16px';
           item.style.backgroundColor = '#e3f2fd';
           item.classList.add('country-hover');
-          
-          // Add auto-selection countdown indicator
-          const countdownEl = document.createElement('div');
-          countdownEl.className = 'auto-select-countdown';
-          countdownEl.style.cssText = 'position: absolute; right: 16px; top: 50%; transform: translateY(-50%); background: #1976d2; color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; animation: countdown-pulse 0.5s ease-in-out infinite;';
-          countdownEl.textContent = '3';
-          item.appendChild(countdownEl);
-          
-          let countdown = 3;
-          const countdownInterval = setInterval(() => {
-            countdown--;
-            countdownEl.textContent = countdown;
-            if (countdown <= 0) {
-              clearInterval(countdownInterval);
-              countdownEl.remove();
-            }
-          }, 167); // 500ms / 3 = ~167ms per countdown step
-          
-          item.hoverTimeout = setTimeout(() => {
-            const name = item.dataset.name;
-            const code = item.dataset.code;
-            
-            // Add auto-selection animation
-            item.classList.add('auto-select');
-            
-            // Auto-enter country name in input field
-            searchInput.value = name;
-            searchInput.placeholder = `Search cities in ${name}...`;
-            searchInput.focus();
-            
-            // Show cities in that country
-            showCitiesInCountry(code, name, onCitySelect);
-            
-            // Remove animation class after animation completes
-            setTimeout(() => {
-              item.classList.remove('auto-select');
-            }, 1000);
-          }, 500); // 500ms delay for auto-selection
         }
       });
       
@@ -908,6 +884,7 @@ function hideCountryDropdown() {
 function showPopularCountries(onCitySelect) {
   const dropdownContainer = document.getElementById('country-dropdown-container');
   if (!dropdownContainer) return;
+  const searchInput = document.getElementById('city-search');
 
   // Popular countries to show by default
   const popularCountries = [
@@ -950,13 +927,8 @@ function showPopularCountries(onCitySelect) {
     item.addEventListener('click', () => {
       const name = item.dataset.name;
       const code = item.dataset.code;
-      
-      // Keep country visible in input field
-      searchInput.value = name;
-      searchInput.focus();
-      
-      // Show cities in that country
-      showCitiesInCountry(code, name, onCitySelect);
+      // Directly redirect to default city for the country
+      redirectToCountryDefaultCity(code, name, onCitySelect);
     });
 
     // Add hover effect
@@ -965,52 +937,12 @@ function showPopularCountries(onCitySelect) {
       item.style.transform = 'translateX(4px)';
       item.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
       
-      // Auto-select country after hover delay
+      // Highlight country item on hover
       clearTimeout(item.hoverTimeout);
-      
-      // Add visual indicator for hover-to-select
       item.style.borderLeft = '4px solid #1976d2';
       item.style.paddingLeft = '16px';
       item.style.backgroundColor = '#e3f2fd';
       item.classList.add('country-hover');
-      
-      // Add auto-selection countdown indicator
-      const countdownEl = document.createElement('div');
-      countdownEl.className = 'auto-select-countdown';
-      countdownEl.style.cssText = 'position: absolute; right: 16px; top: 50%; transform: translateY(-50%); background: #1976d2; color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; animation: countdown-pulse 0.5s ease-in-out infinite;';
-      countdownEl.textContent = '3';
-      item.appendChild(countdownEl);
-      
-      let countdown = 3;
-      const countdownInterval = setInterval(() => {
-        countdown--;
-        countdownEl.textContent = countdown;
-        if (countdown <= 0) {
-          clearInterval(countdownInterval);
-          countdownEl.remove();
-        }
-      }, 167); // 500ms / 3 = ~167ms per countdown step
-      
-      item.hoverTimeout = setTimeout(() => {
-        const name = item.dataset.name;
-        const code = item.dataset.code;
-        
-        // Add auto-selection animation
-        item.classList.add('auto-select');
-        
-        // Auto-enter country name in input field
-        searchInput.value = name;
-        searchInput.placeholder = `Search cities in ${name}...`;
-        searchInput.focus();
-        
-        // Show cities in that country
-        showCitiesInCountry(code, name, onCitySelect);
-        
-        // Remove animation class after animation completes
-        setTimeout(() => {
-          item.classList.remove('auto-select');
-        }, 1000);
-      }, 500); // 500ms delay for auto-selection
     });
     
     item.addEventListener('mouseleave', () => {
@@ -1023,17 +955,11 @@ function showPopularCountries(onCitySelect) {
         clearTimeout(item.hoverTimeout);
       }
       
-      // Reset visual indicators for hover-to-select
+      // Reset visual indicators
       item.style.borderLeft = 'none';
       item.style.paddingLeft = '20px';
       item.style.backgroundColor = 'white';
       item.classList.remove('country-hover');
-      
-      // Remove countdown element if it exists
-      const countdownEl = item.querySelector('.auto-select-countdown');
-      if (countdownEl) {
-        countdownEl.remove();
-      }
     });
   });
 }
@@ -1053,6 +979,7 @@ function showCitiesInCountry(countryCode, countryName, onCitySelect) {
 
   const dropdownContainer = document.getElementById('country-dropdown-container');
   if (!dropdownContainer) return;
+  const searchInput = document.getElementById('city-search');
 
   const citiesHTML = `
     <div style="padding: 16px 20px; border-bottom: 2px solid #e3f2fd; background: #f8f9fa;">
