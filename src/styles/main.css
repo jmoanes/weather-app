@@ -779,10 +779,10 @@ body::before {
   transition: all 0.2s ease;
 }
 .search-btn-inside:hover, .search-btn-inside:focus {
-  background: #e3eaf2;
+  background: #1976d2;
 }
 .search-btn-inside:active .search-icon, .search-btn-inside:focus .search-icon {
-  color: #1251a3;
+  color: #fff;
 }
 .search-icon {
   font-size: 1.2rem !important;

@@ -14,6 +14,8 @@ let expandedDate = '';
 let allExpanded = false;
 let showChart = false;
 let errorMessage = '';
+let lastWeatherData = null;
+let lastForecastData = null;
 
 function renderDashboard(weatherData, forecastData) {
   // Weather Card
@@ -178,6 +180,9 @@ function renderDashboard(weatherData, forecastData) {
       currentView = 'today';
       expandedDate = '';
       showChart = false;
+      // Ensure dropdown is hidden when switching views
+      const dd = document.getElementById('country-dropdown-container');
+      if (dd) dd.style.display = 'none';
       updateDashboard(currentCity);
     }
   };
@@ -186,6 +191,9 @@ function renderDashboard(weatherData, forecastData) {
       currentView = 'fiveDays';
       expandedDate = '';
       showChart = false;
+      // Ensure dropdown is hidden when switching views
+      const dd = document.getElementById('country-dropdown-container');
+      if (dd) dd.style.display = 'none';
       updateDashboard(currentCity);
     }
   };
@@ -209,9 +217,9 @@ function renderDashboard(weatherData, forecastData) {
         ripple.style.top = (e.clientY - rect.top - rect.height/2) + 'px';
         showChartBtn.appendChild(ripple);
         setTimeout(() => ripple.remove(), 600);
-        // Toggle chart
+        // Toggle chart without triggering loading/fetch
         showChart = !showChart;
-        updateDashboard(currentCity);
+        renderDashboard(lastWeatherData, lastForecastData);
       };
     }
   }
@@ -284,6 +292,9 @@ async function updateDashboard(city) {
       let countryName = weatherData && weatherData.sys && weatherData.sys.country ? weatherData.sys.country : '';
       weatherDesc = weatherDesc ? weatherDesc.toLowerCase() : '';
       setCityBackground(city.split(',')[0], weatherDesc, countryName); // Pass weather description for image search
+      // Cache latest data for instant re-renders (e.g., Show Chart toggle)
+      lastWeatherData = weatherData;
+      lastForecastData = forecastData;
     } catch (err) {
       errorMessage = 'City or country not found. Please try another.';
       renderDashboard(null, null);
