@@ -83,12 +83,8 @@ export function initHeader(onCitySelect) {
           <!-- Country suggestions will be populated here -->
         </div>
         
-        <!-- Search Button Row -->
+        <!-- Search Actions (Clear only) -->
         <div class="search-actions" style="display: flex; gap: 16px; margin-top: 20px; justify-content: center; align-items: center;">
-          <button class="main-search-btn" id="main-search-btn" style="padding: 16px 32px; background: linear-gradient(135deg, #1976d2, #1565c0, #0d47a1); color: white; border: none; border-radius: 30px; cursor: pointer; font-size: 16px; font-weight: 700; box-shadow: 0 6px 20px rgba(25, 118, 210, 0.4), 0 2px 8px rgba(0, 0, 0, 0.1); transition: all 0.3s ease; display: flex; align-items: center; gap: 12px; letter-spacing: 0.5px; text-transform: uppercase; min-width: 180px; justify-content: center;">
-            <span style="font-size: 18px; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));">🔍</span>
-            Search
-          </button>
           <button class="clear-search-btn" id="clear-search-btn" style="padding: 14px 28px; background: linear-gradient(135deg, #f5f5f5, #e0e0e0); color: #555; border: 1px solid #ddd; border-radius: 25px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
             Clear
           </button>
@@ -248,52 +244,9 @@ function initializeHeaderEvents(onCitySelect) {
   // Quick country buttons removed
 
   // Add event listeners for main search and clear buttons
-  const mainSearchBtn = document.getElementById('main-search-btn');
   const clearSearchBtn = document.getElementById('clear-search-btn');
 
-  if (mainSearchBtn) {
-    mainSearchBtn.addEventListener('click', () => {
-      const city = searchInput.value.trim();
-      if (city) {
-        // Show loading state
-        const originalContent = mainSearchBtn.innerHTML;
-        mainSearchBtn.innerHTML = '<span>⏳</span> Searching...';
-        mainSearchBtn.style.background = 'linear-gradient(135deg, #666, #555)';
-        mainSearchBtn.disabled = true;
-        
-        // Perform search
-        handleCitySelect(city, onCitySelect, true);
-        
-        // Reset button after a short delay
-        setTimeout(() => {
-          mainSearchBtn.innerHTML = originalContent;
-          mainSearchBtn.style.background = 'linear-gradient(135deg, #1976d2, #1565c0)';
-          mainSearchBtn.disabled = false;
-        }, 2000);
-      } else {
-        // Show error state
-        mainSearchBtn.style.background = 'linear-gradient(135deg, #f44336, #d32f2f)';
-        mainSearchBtn.innerHTML = '<span>❌</span> Enter a city/country';
-        setTimeout(() => {
-          mainSearchBtn.style.background = 'linear-gradient(135deg, #1976d2, #1565c0)';
-          mainSearchBtn.innerHTML = '<span>🔍</span> Search';
-        }, 2000);
-      }
-    });
-
-    // Add hover effects for main search button
-    mainSearchBtn.addEventListener('mouseenter', () => {
-      mainSearchBtn.style.transform = 'translateY(-3px) scale(1.02)';
-      mainSearchBtn.style.boxShadow = '0 8px 25px rgba(25, 118, 210, 0.5), 0 4px 12px rgba(0, 0, 0, 0.15)';
-      mainSearchBtn.style.background = 'linear-gradient(135deg, #1565c0, #1976d2, #42a5f5)';
-    });
-    
-    mainSearchBtn.addEventListener('mouseleave', () => {
-      mainSearchBtn.style.transform = 'translateY(0) scale(1)';
-      mainSearchBtn.style.boxShadow = '0 6px 20px rgba(25, 118, 210, 0.4), 0 2px 8px rgba(0, 0, 0, 0.1)';
-      mainSearchBtn.style.background = 'linear-gradient(135deg, #1976d2, #1565c0, #0d47a1)';
-    });
-  }
+  // Main search button removed; search is triggered by the icon inside the input or Enter key
 
   if (clearSearchBtn) {
     clearSearchBtn.addEventListener('click', () => {
