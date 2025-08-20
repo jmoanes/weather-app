@@ -139,21 +139,12 @@ function renderDashboard(weatherData, forecastData) {
   } else {
     app.innerHTML = `
       <div id="header-root"></div>
-      <div class="main-layout">
-        <div class="main-content-left">
-          ${mainContentHTML}
-        </div>
-        <div class="main-content-center">
-          <div class="weather-right-group">
-            ${weatherCardHTML}
-            ${navButtonsHTML}
-          </div>
-        </div>
-        <div class="main-content-right">
-          ${currentView === 'today' ? quoteHTML : ''}
-        </div>
+      <div class="weather-right-group">
+        ${weatherCardHTML}
+        ${navButtonsHTML}
       </div>
-      ${currentView === 'today' ? dateTimeHTML : ''}
+      ${currentView === 'today' ? `<div class="bottom-quote-row">${dateTimeHTML}${quoteHTML}</div>` : ''}
+      ${mainContentHTML}
     `;
   }
   // Add or remove right-align class based on currentView

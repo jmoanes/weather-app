@@ -1,6 +1,7 @@
 // Quotes logic
 
 const quotes = [
+  { text: "Who cares about the clouds when we're together? Just sing a song and bring the sunny weather.", author: "Dale Evans" },
   { text: "Wherever you go, no matter what the weather, always bring your own sunshine.", author: "Anthony J. D'Angelo" },
   { text: "Sunshine is delicious, rain is refreshing, wind braces us up, snow is exhilarating.", author: "John Ruskin" },
   { text: "There is no such thing as bad weather, only different kinds of good weather.", author: "John Ruskin" },
@@ -12,5 +13,5 @@ const quotes = [
 
 export function getRandomQuote() {
   const q = quotes[Math.floor(Math.random() * quotes.length)];
-  return `<div class="quote-section">“${q.text}”<br><span class="quote-author">— ${q.author}</span></div>`;
+  return `<div class="quote-section"><div class="quote-text">“${q.text}”</div><div class="quote-author">— ${q.author}</div></div>`;
 } 

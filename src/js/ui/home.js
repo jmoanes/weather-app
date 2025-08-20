@@ -60,14 +60,11 @@ export function renderTodayWeather(weatherData) {
     <section class="today-weather-card">
       <div class="weather-card-overlay">
         <div class="weather-card-header">
-          <div style="display:flex;flex-direction:column;align-items:flex-start;gap:4px;">
-            <span class="weather-city">${name}</span>
-            ${countryName ? `<span style="font-size:${isMobile ? '0.85rem' : '0.95rem'};color:#ffd54f;font-weight:500;opacity:0.9;letter-spacing:0.3px;">${countryName}</span>` : ''}
-          </div>
-          <span class="weather-icon" style="font-size: 3rem; display: flex; align-items: center; justify-content: center;">${icon}</span>
+          <span class="weather-icon">${icon}</span>
+          <span class="weather-city">${name}, ${country}</span>
         </div>
-        <div class="weather-temp-main">${temp}&deg;C</div>
-        <div class="weather-minmax">min <b>${min}&deg;</b> &nbsp; max <b>${max}&deg;</b></div>
+        <div class="weather-temp-main">${temp}&deg;</div>
+        <div class="weather-minmax">min ${min}&deg; / max ${max}&deg;</div>
         <div class="weather-desc">${desc}</div>
       </div>
     </section>
