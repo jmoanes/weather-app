@@ -1,3 +1,5 @@
+import { getWeatherIcon, getWeatherDescription } from './weatherIcons.js';
+
 // Home (Today) UI logic
 // Renders today's weather for a city
 
@@ -13,7 +15,8 @@ export function renderTodayWeather(weatherData) {
   const min = Math.round(main.temp_min);
   const max = Math.round(main.temp_max);
   const desc = weather[0].description;
-  const icon = weather[0].icon;
+  const weatherCode = weather[0].id;
+  const icon = getWeatherIcon(weatherCode, true); // Use realistic weather icon
   const country = sys && sys.country ? sys.country : '';
   
   // Helper function to get country name from code
@@ -61,7 +64,7 @@ export function renderTodayWeather(weatherData) {
             <span class="weather-city">${name}</span>
             ${countryName ? `<span style="font-size:${isMobile ? '0.85rem' : '0.95rem'};color:#ffd54f;font-weight:500;opacity:0.9;letter-spacing:0.3px;">${countryName}</span>` : ''}
           </div>
-          <img class="weather-icon" src="https://openweathermap.org/img/wn/${icon}@2x.png" alt="${desc}" />
+          <span class="weather-icon" style="font-size: 3rem; display: flex; align-items: center; justify-content: center;">${icon}</span>
         </div>
         <div class="weather-temp-main">${temp}&deg;C</div>
         <div class="weather-minmax">min <b>${min}&deg;</b> &nbsp; max <b>${max}&deg;</b></div>

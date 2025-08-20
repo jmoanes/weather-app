@@ -1,3 +1,5 @@
+import { getWeatherIcon, getWeatherDescription } from './weatherIcons.js';
+
 // Five Days UI logic
 // Renders 5-day weather forecast for a city
 
@@ -56,7 +58,8 @@ export function renderFiveDayForecast(forecastData, allExpanded = false, showCha
         ${daily.map((day, idx) => {
           const temp = Math.round(day.main.temp);
           const desc = day.weather[0].description;
-          const icon = day.weather[0].icon;
+          const weatherCode = day.weather[0].id;
+          const icon = getWeatherIcon(weatherCode, true); // Use realistic weather icon
           const isExpanded = allExpanded;
           // Get day name and highlight if today
           const d = new Date(day.date);
@@ -66,14 +69,14 @@ export function renderFiveDayForecast(forecastData, allExpanded = false, showCha
             <div class="forecast-card" data-date="${day.date}" data-expanded="${isExpanded}">
               <div class="forecast-day${isToday ? ' today' : ''}">${dayName}</div>
               <div class="forecast-date">${day.date.slice(8,10)} ${d.toLocaleString('default', { month: 'short' })}</div>
-              <img src="https://openweathermap.org/img/wn/${icon}@2x.png" alt="${desc}" />
+              <span style="font-size: 2.5rem; display: flex; align-items: center; justify-content: center; margin-bottom: 16px;">${icon}</span>
               <div class="forecast-minmax">min <span>${day.min}&deg;</span><span class="minmax-divider"></span>max <span>${day.max}&deg;</span></div>
               <div class="forecast-desc">${desc}</div>
               <button class="more-info-btn" data-date="${day.date}">${isExpanded ? 'Hide Info' : 'more info'}</button>
               ${isExpanded ? `<div class="more-info-section" style="align-self: flex-start;">${day.all.slice(0, 7).map(item => `
                 <div class='more-info-mini-card'>
                   <div class='mini-time'>${item.dt_txt.slice(11,16)}</div>
-                  <img class='mini-icon' src='https://openweathermap.org/img/wn/${item.weather[0].icon}.png' alt='' />
+                  <span style="font-size: 1rem;">${getWeatherIcon(item.weather[0].id, true)}</span>
                   <div class='mini-temp'>${Math.round(item.main.temp)}&deg;</div>
                   <div class='mini-detail'>🌡️ ${item.main.pressure} mm</div>
                   <div class='mini-detail'>💧 ${item.main.humidity}%</div>

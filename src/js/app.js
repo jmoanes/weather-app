@@ -4,6 +4,8 @@ import { renderTodayWeather } from './ui/home.js';
 import { renderFiveDayForecast } from './ui/fiveDays.js';
 import { getRandomQuote } from './ui/quote.js';
 import { renderForecastChart } from './ui/chart.js';
+import { renderFooter, initFooter } from './ui/footer.js';
+import { initLanguage, getTranslation } from './i18n.js';
 
 // Main app logic
 let DEFAULT_CITY = 'Kyiv';
@@ -26,22 +28,22 @@ function renderDashboard(weatherData, forecastData) {
       weatherCardHTML = renderTodayWeather(weatherData);
       navButtonsHTML = `
         <div id="nav-buttons">
-          <button id="btn-today" class="nav-btn active">TODAY</button>
-          <button id="btn-five-days" class="nav-btn">5 DAYS</button>
+          <button id="btn-today" class="nav-btn active">${getTranslation('today')}</button>
+          <button id="btn-five-days" class="nav-btn">${getTranslation('fiveDays')}</button>
         </div>
       `;
     } else {
-      weatherCardHTML = `<section class="today-weather-card"><div class="weather-card-overlay"><div class="weather-card-header"><span class="weather-city">Select a city</span></div><div class="weather-temp-main">--°C</div><div class="weather-minmax">min --° / max --°</div></div></section>`;
+      weatherCardHTML = `<section class="today-weather-card"><div class="weather-card-overlay"><div class="weather-card-header"><span class="weather-city">${getTranslation('selectCity')}</span></div><div class="weather-temp-main">--°C</div><div class="weather-minmax">${getTranslation('min')} --° / ${getTranslation('max')} --°</div></div></section>`;
       navButtonsHTML = '';
     }
   } else {
     weatherCardHTML = '';
     navButtonsHTML = `
       <div id="nav-buttons">
-        <button id="btn-today" class="nav-btn">TODAY</button>
-        <button id="btn-five-days" class="nav-btn active">5 DAYS</button>
-      </div>
-    `;
+        <button id="btn-today" class="nav-btn">${getTranslation('today')}</button>
+        <button id="btn-five-days" class="nav-btn active">${getTranslation('fiveDays')}</button>
+        </div>
+      `;
   }
 
   // Main Content (Today or 5 Days)
@@ -49,49 +51,49 @@ function renderDashboard(weatherData, forecastData) {
   if (currentView === 'today') {
     if (weatherData) {
       mainContentHTML = '';
-    } else {
-      mainContentHTML = '<div class="welcome-centered"><div class="welcome-message">Please search for a city to see the weather.</div></div>';
-    }
-  } else if (currentView === 'fiveDays') {
-    if (forecastData) {
-      // Get country information from weather data
-      let countryName = '';
-      if (weatherData && weatherData.sys && weatherData.sys.country) {
-        const countryCode = weatherData.sys.country;
-        // Use the same country names mapping from header.js
-        const countryNames = {
-          'TH': 'Thailand', 'US': 'United States', 'GB': 'United Kingdom', 'FR': 'France',
-          'UA': 'Ukraine', 'PL': 'Poland', 'AU': 'Australia', 'CA': 'Canada', 'DE': 'Germany',
-          'IT': 'Italy', 'ES': 'Spain', 'JP': 'Japan', 'CN': 'China', 'IN': 'India',
-          'BR': 'Brazil', 'MX': 'Mexico', 'RU': 'Russia', 'KR': 'South Korea',
-          'NL': 'Netherlands', 'SE': 'Sweden', 'NO': 'Norway', 'DK': 'Denmark',
-          'FI': 'Finland', 'CH': 'Switzerland', 'AT': 'Austria', 'BE': 'Belgium',
-          'PT': 'Portugal', 'GR': 'Greece', 'IE': 'Ireland', 'NZ': 'New Zealand',
-          'VN': 'Vietnam', 'SG': 'Singapore', 'MY': 'Malaysia', 'ID': 'Indonesia',
-          'PH': 'Philippines', 'TR': 'Turkey', 'SA': 'Saudi Arabia', 'AE': 'United Arab Emirates',
-          'EG': 'Egypt', 'ZA': 'South Africa', 'NG': 'Nigeria', 'KE': 'Kenya',
-          'MA': 'Morocco', 'TN': 'Tunisia', 'DZ': 'Algeria', 'LY': 'Libya',
-          'SD': 'Sudan', 'ET': 'Ethiopia', 'GH': 'Ghana', 'CI': 'Ivory Coast',
-          'SN': 'Senegal', 'ML': 'Mali', 'BF': 'Burkina Faso', 'NE': 'Niger',
-          'TD': 'Chad', 'CF': 'Central African Republic', 'CM': 'Cameroon',
-          'GQ': 'Equatorial Guinea', 'GA': 'Gabon', 'CG': 'Republic of the Congo',
-          'CD': 'Democratic Republic of the Congo', 'AO': 'Angola', 'ZM': 'Zambia',
-          'ZW': 'Zimbabwe', 'BW': 'Botswana', 'NA': 'Namibia', 'SZ': 'Eswatini',
-          'LS': 'Lesotho', 'MG': 'Madagascar', 'MU': 'Mauritius', 'SC': 'Seychelles',
-          'KM': 'Comoros', 'DJ': 'Djibouti', 'SO': 'Somalia', 'ER': 'Eritrea',
-          'SS': 'South Sudan', 'RW': 'Rwanda', 'BI': 'Burundi', 'TZ': 'Tanzania',
-          'UG': 'Uganda', 'MZ': 'Mozambique', 'MW': 'Malawi'
-        };
-        countryName = countryNames[countryCode] || countryCode;
-      }
-      mainContentHTML = renderFiveDayForecast(forecastData, allExpanded, showChart, currentCity, countryName);
-      if (showChart) {
-        mainContentHTML += renderForecastChart(forecastData);
-      }
-    } else {
-      mainContentHTML = '<div class="welcome-centered"><div class="welcome-message">Please search for a city to see the forecast.</div></div>';
-    }
+      } else {
+    mainContentHTML = `<div class="welcome-centered"><div class="welcome-message">${getTranslation('pleaseSearch')}</div></div>`;
   }
+} else if (currentView === 'fiveDays') {
+  if (forecastData) {
+    // Get country information from weather data
+    let countryName = '';
+    if (weatherData && weatherData.sys && weatherData.sys.country) {
+      const countryCode = weatherData.sys.country;
+      // Use the same country names mapping from header.js
+      const countryNames = {
+        'TH': 'Thailand', 'US': 'United States', 'GB': 'United Kingdom', 'FR': 'France',
+        'UA': 'Ukraine', 'PL': 'Poland', 'AU': 'Australia', 'CA': 'Canada', 'DE': 'Germany',
+        'IT': 'Italy', 'ES': 'Spain', 'JP': 'Japan', 'CN': 'China', 'IN': 'India',
+        'BR': 'Brazil', 'MX': 'Mexico', 'RU': 'Russia', 'KR': 'South Korea',
+        'NL': 'Netherlands', 'SE': 'Sweden', 'NO': 'Norway', 'DK': 'Denmark',
+        'FI': 'Finland', 'CH': 'Switzerland', 'AT': 'Austria', 'BE': 'Belgium',
+        'PT': 'Portugal', 'GR': 'Greece', 'IE': 'Ireland', 'NZ': 'New Zealand',
+        'VN': 'Vietnam', 'SG': 'Singapore', 'MY': 'Malaysia', 'ID': 'Indonesia',
+        'PH': 'Philippines', 'TR': 'Turkey', 'SA': 'Saudi Arabia', 'AE': 'United Arab Emirates',
+        'EG': 'Egypt', 'ZA': 'South Africa', 'NG': 'Nigeria', 'KE': 'Kenya',
+        'MA': 'Morocco', 'TN': 'Tunisia', 'DZ': 'Algeria', 'LY': 'Libya',
+        'SD': 'Sudan', 'ET': 'Ethiopia', 'GH': 'Ghana', 'CI': 'Ivory Coast',
+        'SN': 'Senegal', 'ML': 'Mali', 'BF': 'Burkina Faso', 'NE': 'Niger',
+        'TD': 'Chad', 'CF': 'Central African Republic', 'CM': 'Cameroon',
+        'GQ': 'Equatorial Guinea', 'GA': 'Gabon', 'CG': 'Republic of the Congo',
+        'CD': 'Democratic Republic of the Congo', 'AO': 'Angola', 'ZM': 'Zambia',
+        'ZW': 'Zimbabwe', 'BW': 'Botswana', 'NA': 'Namibia', 'SZ': 'Eswatini',
+        'LS': 'Lesotho', 'MG': 'Madagascar', 'MU': 'Mauritius', 'SC': 'Seychelles',
+        'KM': 'Comoros', 'DJ': 'Djibouti', 'SO': 'Somalia', 'ER': 'Eritrea',
+        'SS': 'South Sudan', 'RW': 'Rwanda', 'BI': 'Burundi', 'TZ': 'Tanzania',
+        'UG': 'Uganda', 'MZ': 'Mozambique', 'MW': 'Malawi'
+      };
+      countryName = countryNames[countryCode] || countryCode;
+    }
+    mainContentHTML = renderFiveDayForecast(forecastData, allExpanded, showChart, currentCity, countryName);
+    if (showChart) {
+      mainContentHTML += renderForecastChart(forecastData);
+    }
+  } else {
+    mainContentHTML = `<div class="welcome-centered"><div class="welcome-message">${getTranslation('pleaseSearchForecast')}</div></div>`;
+  }
+}
 
   // Date/Time Section
   let dateTimeHTML = '';
@@ -133,6 +135,7 @@ function renderDashboard(weatherData, forecastData) {
       <div id="header-root"></div>
       ${navButtonsHTML}
       ${mainContentHTML}
+      ${renderFooter()}
     `;
   } else {
     app.innerHTML = `
@@ -144,6 +147,7 @@ function renderDashboard(weatherData, forecastData) {
       ${mainContentHTML}
       ${currentView === 'today' ? dateTimeHTML : ''}
       ${currentView === 'today' ? quoteHTML : ''}
+      ${renderFooter()}
     `;
   }
   // Add or remove right-align class based on currentView
@@ -372,13 +376,34 @@ function showErrorMessage(message) {
   }, 3000);
 }
 
-window.addEventListener('DOMContentLoaded', () => {
-  // On first load, use default city and country
-  updateDashboard(`${DEFAULT_CITY},${DEFAULT_COUNTRY}`);
+window.addEventListener('DOMContentLoaded', async () => {
+  // Initialize language system
+  initLanguage();
+  
+  // Initialize header
   initHeader(async (city) => {
     currentView = 'today';
     expandedDate = '';
     showChart = false;
     await updateDashboard(city);
   });
-}); 
+  
+  // Initialize footer
+  initFooter();
+  
+  // On first load, use default city and country
+  await updateDashboard(`${DEFAULT_CITY},${DEFAULT_COUNTRY}`);
+  
+  // Listen for language changes
+  window.addEventListener('languageChanged', () => {
+    updateUILanguage();
+  });
+});
+
+// Function to update UI language
+function updateUILanguage() {
+  // Re-render the dashboard with new language
+  if (lastWeatherData || lastForecastData) {
+    renderDashboard(lastWeatherData, lastForecastData);
+  }
+} 
