@@ -68,6 +68,23 @@ const countryData = [
 export function initHeader(onCitySelect) {
   const headerHTML = `
     <header class="header">
+      <div class="header-top">
+        <div class="header-left">
+          <h1 class="app-title">Weather Dashboard</h1>
+        </div>
+        <div class="header-right">
+          <div class="language-selector-header">
+            <button class="language-btn-header" id="language-btn-header">
+              <span class="language-flag">🇺🇸</span>
+              <span class="language-name">English</span>
+              <span class="language-arrow">▼</span>
+            </button>
+            <div class="language-dropdown-header" id="language-dropdown-header">
+              <!-- Language options will be populated here -->
+            </div>
+          </div>
+        </div>
+      </div>
       
       <div class="header-searchbar">
         <div class="search-input-wrapper" style="width: 100%; max-width: 1000px; margin: 0 auto; position: relative;">
@@ -127,6 +144,9 @@ export function initHeader(onCitySelect) {
 
   // Initialize event listeners
   initializeHeaderEvents(onCitySelect);
+  
+  // Initialize language selector
+  initializeLanguageSelector();
   
 
 }
@@ -197,11 +217,12 @@ function initializeHeaderEvents(onCitySelect) {
     });
 
     // Hide dropdown when input loses focus (with small delay for click)
-    searchInput.addEventListener('blur', () => {
-      setTimeout(() => hideCountryDropdown(), 200);
-    });
+    // Removed auto-hide to keep dropdown visible as requested
+    // searchInput.addEventListener('blur', () => {
+    //   setTimeout(() => hideCountryDropdown(), 200);
+    // });
 
-    // Show dropdown on hover over input wrapper
+    // Show dropdown on hover over input wrapper - keep dropdown visible
     if (searchWrapper && countryDropdown) {
       searchWrapper.addEventListener('mouseenter', () => {
         clearTimeout(hoverHideTimeout);
@@ -212,23 +233,11 @@ function initializeHeaderEvents(onCitySelect) {
           showPopularCountries(onCitySelect, keepCountryText);
         }
       });
-      searchWrapper.addEventListener('mouseleave', () => {
-        hoverHideTimeout = setTimeout(() => {
-          if (!countryDropdown.matches(':hover')) {
-            hideCountryDropdown();
-          }
-        }, 150);
-      });
+      // Remove auto-hide on mouse leave to keep dropdown visible
       countryDropdown.addEventListener('mouseenter', () => {
         clearTimeout(hoverHideTimeout);
       });
-      countryDropdown.addEventListener('mouseleave', () => {
-        hoverHideTimeout = setTimeout(() => {
-          if (!searchWrapper.matches(':hover')) {
-            hideCountryDropdown();
-          }
-        }, 150);
-      });
+      // Only hide when clicking outside or explicitly closing
     }
 
     // No other event listeners that could interfere with typing
@@ -1042,5 +1051,72 @@ function showCitiesInCountry(countryCode, countryName, onCitySelect) {
       item.style.transform = 'translateX(0)';
       item.style.boxShadow = 'none';
     });
+  });
+}
+
+// Language selector functionality
+function initializeLanguageSelector() {
+  const languageBtn = document.getElementById('language-btn-header');
+  const languageDropdown = document.getElementById('language-dropdown-header');
+  
+  if (!languageBtn || !languageDropdown) return;
+  
+  // Import language functions
+  import('../i18n.js').then(({ getCurrentLanguage, getAvailableLanguages, getLanguageName, getLanguageFlag, setLanguage }) => {
+    updateLanguageDisplay();
+    
+    // Populate language dropdown
+    const availableLanguages = getAvailableLanguages();
+    const currentLang = getCurrentLanguage();
+    
+    const languageOptionsHTML = availableLanguages
+      .filter(lang => lang !== currentLang)
+      .map(lang => `
+        <div class="language-option-header" data-lang="${lang}">
+          <span class="language-flag">${getLanguageFlag(lang)}</span>
+          <span class="language-name">${getLanguageName(lang)}</span>
+        </div>
+      `).join('');
+    
+    languageDropdown.innerHTML = languageOptionsHTML;
+    
+    // Add click event for language button
+    languageBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      languageDropdown.classList.toggle('show');
+      languageBtn.classList.toggle('active');
+    });
+    
+    // Add click events for language options
+    languageDropdown.querySelectorAll('.language-option-header').forEach(option => {
+             option.addEventListener('click', (e) => {
+         e.stopPropagation();
+         const lang = option.dataset.lang;
+         setLanguage(lang);
+         updateLanguageDisplay();
+         languageDropdown.classList.remove('show');
+         languageBtn.classList.remove('active');
+       });
+    });
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!languageBtn.contains(e.target) && !languageDropdown.contains(e.target)) {
+        languageDropdown.classList.remove('show');
+        languageBtn.classList.remove('active');
+      }
+    });
+    
+    function updateLanguageDisplay() {
+      const currentLang = getCurrentLanguage();
+      const flagEl = languageBtn.querySelector('.language-flag');
+      const nameEl = languageBtn.querySelector('.language-name');
+      
+      if (flagEl) flagEl.textContent = getLanguageFlag(currentLang);
+      if (nameEl) nameEl.textContent = getLanguageName(currentLang);
+    }
+    
+    // Listen for language changes
+    window.addEventListener('languageChanged', updateLanguageDisplay);
   });
 } 

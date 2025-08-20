@@ -9,6 +9,7 @@ body {
   overflow-x: hidden;
   -webkit-text-size-adjust: 100%;
   -ms-text-size-adjust: 100%;
+  padding-top: 180px;
 }
 
 #app {
@@ -30,6 +31,82 @@ body {
   width: 100%;
   max-width: 100%;
   margin: 0;
+}
+
+/* Mobile layout adjustments */
+.main-layout {
+  flex-direction: column;
+  gap: 20px;
+  padding: 0 16px;
+}
+
+.main-content-left,
+.main-content-center,
+.main-content-right {
+  width: 100%;
+  position: static;
+}
+
+.main-content-center {
+  order: -1;
+}
+
+/* Mobile date/time and quote positioning */
+.date-time-section {
+  position: fixed;
+  left: 10px;
+  bottom: 10px;
+  width: calc(100vw - 20px);
+  max-width: 200px;
+  z-index: 100;
+}
+
+.quote-section {
+  position: fixed;
+  right: 10px;
+  bottom: 10px;
+  width: calc(100vw - 20px);
+  max-width: 200px;
+  z-index: 100;
+}
+
+/* Header Top Section Responsive */
+.header-top {
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 16px;
+  padding: 0 8px;
+}
+
+.header-left {
+  justify-content: center;
+}
+
+.app-title {
+  font-size: 1.8rem;
+  text-align: center;
+}
+
+.header-right {
+  justify-content: center;
+}
+
+/* Language Selector Responsive */
+.language-btn-header {
+  padding: 10px 14px;
+  font-size: 13px;
+  gap: 6px;
+}
+
+.language-dropdown-header {
+  right: auto;
+  left: 50%;
+  transform: translateX(-50%) translateY(-10px);
+  min-width: 180px;
+}
+
+.language-dropdown-header.show {
+  transform: translateX(-50%) translateY(0);
 }
 
 .header-title {
@@ -529,7 +606,7 @@ body {
 @media (max-width: 599px) {
   /* App container improvements */
   #app {
-    padding: 0 0 300px 0;
+    padding: 0 0 350px 0;
     margin: 0;
     width: 100%;
     min-height: 100vh;
@@ -563,11 +640,12 @@ body {
   
   /* Five days forecast mobile optimization */
   .five-days-forecast {
-    margin: 20px 16px 0 16px;
-    padding: 28px 20px 24px 20px;
-    border-radius: 24px;
-    max-width: calc(100% - 32px);
-    width: calc(100% - 32px);
+    margin: 24px 20px 0 20px;
+    padding: 32px 24px 28px 24px;
+    border-radius: 28px;
+    max-width: calc(100% - 40px);
+    width: calc(100% - 40px);
+    margin-bottom: 40px;
   }
   
   .forecast-location-header {
@@ -586,14 +664,14 @@ body {
   .date-time-section,
   .quote-section {
     position: static;
-    margin: 24px auto;
+    margin: 28px auto;
     bottom: auto;
     left: auto;
     right: auto;
     max-width: 100%;
     width: calc(100% - 40px);
-    padding: 32px 28px 28px 28px;
-    border-radius: 28px;
+    padding: 36px 32px 32px 32px;
+    border-radius: 32px;
   }
   
   /* Autocomplete dropdown mobile styles */
@@ -896,6 +974,56 @@ body {
     height: 36px;
     font-size: 19px;
   }
+  
+  /* Tablet header top section */
+  .header-top {
+    flex-direction: row;
+    gap: 24px;
+    margin-bottom: 20px;
+    padding: 0 12px;
+  }
+  
+  .app-title {
+    font-size: 2.2rem;
+  }
+  
+  .language-btn-header {
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+  
+  /* Tablet layout adjustments */
+  .main-layout {
+    flex-direction: column;
+    gap: 24px;
+    padding: 0 20px;
+  }
+  
+  .main-content-left,
+  .main-content-center,
+  .main-content-right {
+    width: 100%;
+    position: static;
+  }
+  
+  .main-content-center {
+    order: -1;
+  }
+  
+  /* Tablet date/time and quote positioning */
+  .date-time-section {
+    left: 20px;
+    bottom: 20px;
+    width: 250px;
+    max-width: 250px;
+  }
+  
+  .quote-section {
+    right: 20px;
+    bottom: 20px;
+    width: 250px;
+    max-width: 250px;
+  }
 }
 
 /* Desktop styles (900px and above) */
@@ -931,6 +1059,78 @@ body {
   
   .header {
     padding: 24px 32px 16px 32px;
+  }
+  
+  /* Desktop header top section */
+  .header-top {
+    flex-direction: row;
+    gap: 32px;
+    margin-bottom: 24px;
+    padding: 0 16px;
+  }
+  
+  .app-title {
+    font-size: 2.4rem;
+  }
+  
+  .language-btn-header {
+    padding: 14px 18px;
+    font-size: 15px;
+  }
+  
+  .language-dropdown-header {
+    right: 0;
+    left: auto;
+    transform: translateY(-10px);
+  }
+  
+  .language-dropdown-header.show {
+    transform: translateY(0);
+  }
+  
+  /* Desktop layout adjustments */
+  .main-layout {
+    flex-direction: row;
+    gap: 40px;
+    padding: 0 32px;
+  }
+  
+  .main-content-left {
+    flex: 1;
+    position: static;
+  }
+  
+  .main-content-center {
+    width: 400px;
+    position: sticky;
+    top: 220px;
+    order: 0;
+  }
+  
+  .main-content-right {
+    width: 400px;
+    position: sticky;
+    top: 220px;
+    order: 0;
+  }
+  
+  /* Desktop date/time and quote positioning */
+  .date-time-section {
+    left: 32px;
+    bottom: 32px;
+    width: 300px;
+    max-width: 300px;
+  }
+  
+  .quote-section {
+    right: 32px;
+    bottom: 32px;
+    width: 350px;
+    max-width: 350px;
+  }
+  
+  body {
+    padding-top: 200px;
   }
   
   .header-title {
@@ -1325,25 +1525,26 @@ body {
   }
   
   .five-days-forecast {
-    max-width: calc(100% - 100px);
-    margin: 50px 50px 0 50px;
-    padding: 56px 56px 52px 56px;
+    max-width: calc(100% - 120px);
+    margin: 60px 60px 0 60px;
+    padding: 64px 64px 60px 64px;
+    margin-bottom: 60px;
   }
   
   .weather-right-group {
     right: 80px;
     top: 140px;
-    bottom: 370px;
+    bottom: 420px;
   }
   
   .date-time-section {
     left: 80px;
-    bottom: 370px;
+    bottom: 420px;
   }
   
   .quote-section {
     right: 80px;
-    bottom: 370px;
+    bottom: 420px;
   }
 }
 
@@ -1354,25 +1555,26 @@ body {
   }
   
   .five-days-forecast {
-    max-width: calc(100% - 120px);
-    margin: 60px 60px 0 60px;
-    padding: 64px 64px 60px 64px;
+    max-width: calc(100% - 140px);
+    margin: 70px 70px 0 70px;
+    padding: 72px 72px 68px 72px;
+    margin-bottom: 70px;
   }
   
   .weather-right-group {
     right: 100px;
     top: 160px;
-    bottom: 370px;
+    bottom: 420px;
   }
   
   .date-time-section {
     left: 100px;
-    bottom: 370px;
+    bottom: 420px;
   }
   
   .quote-section {
     right: 100px;
-    bottom: 370px;
+    bottom: 420px;
   }
 }
 

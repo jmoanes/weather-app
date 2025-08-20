@@ -4,7 +4,7 @@ import { renderTodayWeather } from './ui/home.js';
 import { renderFiveDayForecast } from './ui/fiveDays.js';
 import { getRandomQuote } from './ui/quote.js';
 import { renderForecastChart } from './ui/chart.js';
-import { renderFooter, initFooter } from './ui/footer.js';
+
 import { initLanguage, getTranslation } from './i18n.js';
 
 // Main app logic
@@ -135,19 +135,25 @@ function renderDashboard(weatherData, forecastData) {
       <div id="header-root"></div>
       ${navButtonsHTML}
       ${mainContentHTML}
-      ${renderFooter()}
     `;
   } else {
     app.innerHTML = `
       <div id="header-root"></div>
-      <div class="weather-right-group">
-        ${weatherCardHTML}
-        ${navButtonsHTML}
+      <div class="main-layout">
+        <div class="main-content-left">
+          ${mainContentHTML}
+        </div>
+        <div class="main-content-center">
+          <div class="weather-right-group">
+            ${weatherCardHTML}
+            ${navButtonsHTML}
+          </div>
+        </div>
+        <div class="main-content-right">
+          ${currentView === 'today' ? quoteHTML : ''}
+        </div>
       </div>
-      ${mainContentHTML}
       ${currentView === 'today' ? dateTimeHTML : ''}
-      ${currentView === 'today' ? quoteHTML : ''}
-      ${renderFooter()}
     `;
   }
   // Add or remove right-align class based on currentView
@@ -388,8 +394,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     await updateDashboard(city);
   });
   
-  // Initialize footer
-  initFooter();
+
   
   // On first load, use default city and country
   await updateDashboard(`${DEFAULT_CITY},${DEFAULT_COUNTRY}`);
